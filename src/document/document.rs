@@ -11,8 +11,7 @@ use crate::verification::MethodRef;
 use crate::verification::MethodScope;
 use crate::verification::MethodWrap;
 
-#[derive(Clone, Debug, PartialEq)]
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[rustfmt::skip]
 pub struct Document {
   pub(crate) id: DID,
