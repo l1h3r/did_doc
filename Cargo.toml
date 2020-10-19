@@ -3,7 +3,26 @@ name = "did_doc"
 version = "0.1.0"
 authors = ["l1h3r <devin.turner09@gmail.com>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "MIT OR Apache-2.0"
+description = "A library for Decentralized Identifier (DID) Documents"
+repository = "https://github.com/l1h3r/did_doc"
+keywords = ["decentralized", "identity", "did", "did-document"]
+categories = []
+include = ["src/**/*.rs", "README.md", "LICENSE-APACHE", "LICENSE-MIT"]
+readme = "README.md"
 
 [dependencies]
+bs58 = { version = "0.3", default-features = false, features = ["alloc"] }
+did = { path = "../did", default-features = false, features = ["alloc", "serde"] }
+hex = { version = "0.4", default-features = false }
+serde = { version = "1.0", default-features = false, features = ["alloc", "derive"] }
+url = { version = "2.1", default-features = false, features = ["serde"] }
+
+[features]
+default = ["std"]
+
+# Enables functionality requiring the `std` crate.
+std = ["alloc"]
+
+# Enables functionality requiring the `alloc` crate.
+alloc = []
