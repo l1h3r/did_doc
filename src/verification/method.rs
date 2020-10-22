@@ -1,4 +1,10 @@
+use core::fmt::Display;
+use core::fmt::Error;
+use core::fmt::Formatter;
+use core::fmt::Result;
 use did::DID;
+use serde_json::to_string;
+use serde_json::to_string_pretty;
 
 use crate::utils::Object;
 use crate::verification::MethodData;
@@ -39,5 +45,15 @@ impl Method {
 
   pub fn properties_mut(&mut self) -> &mut Object {
     &mut self.properties
+  }
+}
+
+impl Display for Method {
+  fn fmt(&self, f: &mut Formatter) -> Result {
+    if f.alternate() {
+      f.write_str(&to_string_pretty(self).map_err(|_| Error)?)
+    } else {
+      f.write_str(&to_string(self).map_err(|_| Error)?)
+    }
   }
 }

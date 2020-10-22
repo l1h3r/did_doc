@@ -1,5 +1,11 @@
 use alloc::vec::Vec;
+use core::fmt::Display;
+use core::fmt::Error;
+use core::fmt::Formatter;
+use core::fmt::Result;
 use did::DID;
+use serde_json::to_string;
+use serde_json::to_string_pretty;
 use url::Url;
 
 use crate::service::Service;
@@ -148,5 +154,15 @@ impl Document {
 
   fn matches_fragment(did: &DID, ident: MethodIndex) -> bool {
     matches!(did.fragment(), Some(fragment) if ident == fragment)
+  }
+}
+
+impl Display for Document {
+  fn fmt(&self, f: &mut Formatter) -> Result {
+    if f.alternate() {
+      f.write_str(&to_string_pretty(self).map_err(|_| Error)?)
+    } else {
+      f.write_str(&to_string(self).map_err(|_| Error)?)
+    }
   }
 }

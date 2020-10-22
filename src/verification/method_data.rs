@@ -17,7 +17,8 @@ pub enum MethodData {
 impl MethodData {
   pub fn try_decode(&self) -> Result<Option<Vec<u8>>> {
     match self {
-      Self::PublicKeyJwk(_) | Self::PublicKeyPem(_) => Ok(None),
+      Self::PublicKeyJwk(_) => Ok(None),
+      Self::PublicKeyPem(_) => Ok(None), // TODO
       Self::PublicKeyBase58(inner) => bs58::decode(inner)
         .into_vec()
         .map_err(|_| Error::InvalidKey { error: "oh no" })
