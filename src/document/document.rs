@@ -49,12 +49,24 @@ impl<T> Document<T> {
     &self.id
   }
 
+  pub fn id_mut(&mut self) -> &mut DID {
+    &mut self.id
+  }
+
   pub fn controller(&self) -> Option<&DID> {
     self.controller.as_ref()
   }
 
+  pub fn controller_mut(&mut self) -> Option<&mut DID> {
+    self.controller.as_mut()
+  }
+
   pub fn also_known_as(&self) -> &[Url] {
     &self.also_known_as
+  }
+
+  pub fn also_known_as_mut(&mut self) -> &mut Vec<Url> {
+    &mut self.also_known_as
   }
 
   pub fn verification_method(&self) -> &OrderedSet<Method> {
@@ -107,6 +119,10 @@ impl<T> Document<T> {
 
   pub fn service(&self) -> &[Service] {
     &self.service
+  }
+
+  pub fn service_mut(&mut self) -> &mut Vec<Service> {
+    &mut self.service
   }
 
   pub fn properties(&self) -> &T {

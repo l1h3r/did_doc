@@ -27,12 +27,24 @@ impl<T> Service<T> {
     &self.id
   }
 
+  pub fn id_mut(&mut self) -> &mut DID {
+    &mut self.id
+  }
+
   pub fn type_(&self) -> &str {
     &*self.type_
   }
 
+  pub fn type_mut(&mut self) -> &mut String {
+    &mut self.type_
+  }
+
   pub fn service_endpoint(&self) -> &Url {
     &self.service_endpoint
+  }
+
+  pub fn service_endpoint_mut(&mut self) -> &mut Url {
+    &mut self.service_endpoint
   }
 
   pub fn properties(&self) -> &T {

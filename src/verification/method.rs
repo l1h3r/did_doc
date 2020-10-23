@@ -28,16 +28,32 @@ impl<T> Method<T> {
     &self.id
   }
 
+  pub fn id_mut(&mut self) -> &mut DID {
+    &mut self.id
+  }
+
   pub fn controller(&self) -> &DID {
     &self.controller
+  }
+
+  pub fn controller_mut(&mut self) -> &mut DID {
+    &mut self.controller
   }
 
   pub fn key_type(&self) -> MethodType {
     self.key_type
   }
 
+  pub fn key_type_mut(&mut self) -> &mut MethodType {
+    &mut self.key_type
+  }
+
   pub fn key_data(&self) -> &MethodData {
     &self.key_data
+  }
+
+  pub fn key_data_mut(&mut self) -> &mut MethodData {
+    &mut self.key_data
   }
 
   pub fn properties(&self) -> &T {
