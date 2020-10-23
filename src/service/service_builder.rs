@@ -9,20 +9,20 @@ use crate::utils::Object;
 use crate::utils::Value;
 
 #[derive(Clone, Debug, Default)]
-pub struct ServiceBuilder {
+pub struct ServiceBuilder<T = Object> {
   id: Option<DID>,
   type_: Option<String>,
   service_endpoint: Option<Url>,
-  properties: Object,
+  properties: T,
 }
 
-impl ServiceBuilder {
-  pub fn new() -> Self {
+impl<T> ServiceBuilder<T> {
+  pub fn new(properties: T) -> Self {
     Self {
       id: None,
       type_: None,
       service_endpoint: None,
-      properties: Object::new(),
+      properties,
     }
   }
 
@@ -41,28 +41,7 @@ impl ServiceBuilder {
     self
   }
 
-  pub fn property<T, U>(mut self, key: T, value: U) -> Self
-  where
-    T: Into<String>,
-    U: Into<Value>,
-  {
-    self.properties.insert(key.into(), value.into());
-    self
-  }
-
-  pub fn properties<T, U, I>(mut self, iter: I) -> Self
-  where
-    I: IntoIterator<Item = (T, U)>,
-    T: Into<String>,
-    U: Into<Value>,
-  {
-    self
-      .properties
-      .extend(iter.into_iter().map(|(k, v)| (k.into(), v.into())));
-    self
-  }
-
-  pub fn build(self) -> Result<Service> {
+  pub fn build(self) -> Result<Service<T>> {
     let id: DID = self.id.ok_or(Error::InvalidBuilder {
       name: "Service",
       error: "Missing `id`",
@@ -87,6 +66,29 @@ impl ServiceBuilder {
   }
 }
 
+impl ServiceBuilder {
+  pub fn property<K, V>(mut self, key: K, value: V) -> Self
+  where
+    K: Into<String>,
+    V: Into<Value>,
+  {
+    self.properties.insert(key.into(), value.into());
+    self
+  }
+
+  pub fn properties<K, V, I>(mut self, iter: I) -> Self
+  where
+    I: IntoIterator<Item = (K, V)>,
+    K: Into<String>,
+    V: Into<Value>,
+  {
+    self
+      .properties
+      .extend(iter.into_iter().map(|(k, v)| (k.into(), v.into())));
+    self
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -94,7 +96,7 @@ mod tests {
   #[test]
   #[should_panic = "Missing `id`"]
   fn test_missing_id() {
-    ServiceBuilder::new()
+    let _: Service = ServiceBuilder::default()
       .type_("ServiceType")
       .service_endpoint("https://example.com".parse().unwrap())
       .build()
@@ -104,7 +106,7 @@ mod tests {
   #[test]
   #[should_panic = "Missing `type`"]
   fn test_missing_type_() {
-    ServiceBuilder::new()
+    let _: Service = ServiceBuilder::default()
       .id("did:example:123".parse().unwrap())
       .service_endpoint("https://example.com".parse().unwrap())
       .build()
@@ -114,7 +116,7 @@ mod tests {
   #[test]
   #[should_panic = "Missing `service_endpoint`"]
   fn test_missing_service_endpoint() {
-    ServiceBuilder::new()
+    let _: Service = ServiceBuilder::default()
       .id("did:example:123".parse().unwrap())
       .type_("ServiceType")
       .build()

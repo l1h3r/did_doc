@@ -14,7 +14,7 @@ use crate::verification::Method;
 use crate::verification::MethodRef;
 
 #[derive(Clone, Debug, Default)]
-pub struct DocumentBuilder {
+pub struct DocumentBuilder<T = Object> {
   id: Option<DID>,
   controller: Option<DID>,
   also_known_as: Vec<Url>,
@@ -25,11 +25,11 @@ pub struct DocumentBuilder {
   capability_delegation: Vec<MethodRef>,
   capability_invocation: Vec<MethodRef>,
   service: Vec<Service>,
-  properties: Object,
+  properties: T,
 }
 
-impl DocumentBuilder {
-  pub fn new() -> Self {
+impl<T> DocumentBuilder<T> {
+  pub fn new(properties: T) -> Self {
     Self {
       id: None,
       controller: None,
@@ -41,7 +41,7 @@ impl DocumentBuilder {
       capability_delegation: Vec::new(),
       capability_invocation: Vec::new(),
       service: Vec::new(),
-      properties: Object::new(),
+      properties,
     }
   }
 
@@ -94,28 +94,7 @@ impl DocumentBuilder {
     self.service.push(value);
   }
 
-  pub fn property<T, U>(mut self, key: T, value: U) -> Self
-  where
-    T: Into<String>,
-    U: Into<Value>,
-  {
-    self.properties.insert(key.into(), value.into());
-    self
-  }
-
-  pub fn properties<T, U, I>(mut self, iter: I) -> Self
-  where
-    I: IntoIterator<Item = (T, U)>,
-    T: Into<String>,
-    U: Into<Value>,
-  {
-    self
-      .properties
-      .extend(iter.into_iter().map(|(k, v)| (k.into(), v.into())));
-    self
-  }
-
-  pub fn build(self) -> Result<Document> {
+  pub fn build(self) -> Result<Document<T>> {
     let id: DID = self.id.ok_or(Error::InvalidBuilder {
       name: "Document",
       error: "Missing `id`",
@@ -139,6 +118,29 @@ impl DocumentBuilder {
   }
 }
 
+impl DocumentBuilder {
+  pub fn property<K, V>(mut self, key: K, value: V) -> Self
+  where
+    K: Into<String>,
+    V: Into<Value>,
+  {
+    self.properties.insert(key.into(), value.into());
+    self
+  }
+
+  pub fn properties<K, V, I>(mut self, iter: I) -> Self
+  where
+    I: IntoIterator<Item = (K, V)>,
+    K: Into<String>,
+    V: Into<Value>,
+  {
+    self
+      .properties
+      .extend(iter.into_iter().map(|(k, v)| (k.into(), v.into())));
+    self
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -146,6 +148,6 @@ mod tests {
   #[test]
   #[should_panic = "Missing `id`"]
   fn test_missing_id() {
-    DocumentBuilder::new().build().unwrap();
+    let _: Document = DocumentBuilder::default().build().unwrap();
   }
 }

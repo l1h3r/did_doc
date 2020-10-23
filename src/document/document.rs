@@ -4,6 +4,7 @@ use core::fmt::Error;
 use core::fmt::Formatter;
 use core::fmt::Result;
 use did_url::DID;
+use serde::Serialize;
 use serde_json::to_string;
 use serde_json::to_string_pretty;
 use url::Url;
@@ -19,7 +20,7 @@ use crate::verification::MethodWrap;
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[rustfmt::skip]
-pub struct Document {
+pub struct Document<T = Object> {
   pub(crate) id: DID,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub(crate) controller: Option<DID>,
@@ -40,10 +41,10 @@ pub struct Document {
   #[serde(default, skip_serializing_if = "Vec::is_empty")]
   pub(crate) service: Vec<Service>,
   #[serde(flatten)]
-  pub(crate) properties: Object,
+  pub(crate) properties: T,
 }
 
-impl Document {
+impl<T> Document<T> {
   pub fn id(&self) -> &DID {
     &self.id
   }
@@ -108,18 +109,18 @@ impl Document {
     &self.service
   }
 
-  pub fn properties(&self) -> &Object {
+  pub fn properties(&self) -> &T {
     &self.properties
   }
 
-  pub fn properties_mut(&mut self) -> &mut Object {
+  pub fn properties_mut(&mut self) -> &mut T {
     &mut self.properties
   }
 
-  pub fn resolve_method<'a, T, U>(&self, ident: T, scope: U) -> Option<MethodWrap>
+  pub fn resolve_method<'a, I, S>(&self, ident: I, scope: S) -> Option<MethodWrap>
   where
-    T: Into<MethodIndex<'a>>,
-    U: Into<Option<MethodScope>>,
+    I: Into<MethodIndex<'a>>,
+    S: Into<Option<MethodScope>>,
   {
     self.resolve_method_(ident.into(), scope.into().unwrap_or_default())
   }
@@ -157,7 +158,10 @@ impl Document {
   }
 }
 
-impl Display for Document {
+impl<T> Display for Document<T>
+where
+  T: Serialize,
+{
   fn fmt(&self, f: &mut Formatter) -> Result {
     if f.alternate() {
       f.write_str(&to_string_pretty(self).map_err(|_| Error)?)

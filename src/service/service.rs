@@ -4,6 +4,7 @@ use core::fmt::Error;
 use core::fmt::Formatter;
 use core::fmt::Result;
 use did_url::DID;
+use serde::Serialize;
 use serde_json::to_string;
 use serde_json::to_string_pretty;
 use url::Url;
@@ -11,17 +12,17 @@ use url::Url;
 use crate::utils::Object;
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub struct Service {
+pub struct Service<T = Object> {
   pub(crate) id: DID,
   #[serde(rename = "type")]
   pub(crate) type_: String,
   #[serde(rename = "serviceEndpoint")]
   pub(crate) service_endpoint: Url,
   #[serde(flatten)]
-  pub(crate) properties: Object,
+  pub(crate) properties: T,
 }
 
-impl Service {
+impl<T> Service<T> {
   pub fn id(&self) -> &DID {
     &self.id
   }
@@ -34,16 +35,19 @@ impl Service {
     &self.service_endpoint
   }
 
-  pub fn properties(&self) -> &Object {
+  pub fn properties(&self) -> &T {
     &self.properties
   }
 
-  pub fn properties_mut(&mut self) -> &mut Object {
+  pub fn properties_mut(&mut self) -> &mut T {
     &mut self.properties
   }
 }
 
-impl Display for Service {
+impl<T> Display for Service<T>
+where
+  T: Serialize,
+{
   fn fmt(&self, f: &mut Formatter) -> Result {
     if f.alternate() {
       f.write_str(&to_string_pretty(self).map_err(|_| Error)?)

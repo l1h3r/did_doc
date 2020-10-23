@@ -3,6 +3,7 @@ use core::fmt::Error;
 use core::fmt::Formatter;
 use core::fmt::Result;
 use did_url::DID;
+use serde::Serialize;
 use serde_json::to_string;
 use serde_json::to_string_pretty;
 
@@ -11,7 +12,7 @@ use crate::verification::MethodData;
 use crate::verification::MethodType;
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub struct Method {
+pub struct Method<T = Object> {
   pub(crate) id: DID,
   pub(crate) controller: DID,
   #[serde(rename = "type")]
@@ -19,10 +20,10 @@ pub struct Method {
   #[serde(flatten)]
   pub(crate) key_data: MethodData,
   #[serde(flatten)]
-  pub(crate) properties: Object,
+  pub(crate) properties: T,
 }
 
-impl Method {
+impl<T> Method<T> {
   pub fn id(&self) -> &DID {
     &self.id
   }
@@ -39,16 +40,19 @@ impl Method {
     &self.key_data
   }
 
-  pub fn properties(&self) -> &Object {
+  pub fn properties(&self) -> &T {
     &self.properties
   }
 
-  pub fn properties_mut(&mut self) -> &mut Object {
+  pub fn properties_mut(&mut self) -> &mut T {
     &mut self.properties
   }
 }
 
-impl Display for Method {
+impl<T> Display for Method<T>
+where
+  T: Serialize,
+{
   fn fmt(&self, f: &mut Formatter) -> Result {
     if f.alternate() {
       f.write_str(&to_string_pretty(self).map_err(|_| Error)?)

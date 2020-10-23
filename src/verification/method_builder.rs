@@ -10,22 +10,22 @@ use crate::verification::MethodData;
 use crate::verification::MethodType;
 
 #[derive(Clone, Debug, Default)]
-pub struct MethodBuilder {
+pub struct MethodBuilder<T = Object> {
   id: Option<DID>,
   controller: Option<DID>,
   key_type: Option<MethodType>,
   key_data: Option<MethodData>,
-  properties: Object,
+  properties: T,
 }
 
-impl MethodBuilder {
-  pub fn new() -> Self {
+impl<T> MethodBuilder<T> {
+  pub fn new(properties: T) -> Self {
     Self {
       id: None,
       controller: None,
       key_type: None,
       key_data: None,
-      properties: Object::new(),
+      properties,
     }
   }
 
@@ -49,28 +49,7 @@ impl MethodBuilder {
     self
   }
 
-  pub fn property<T, U>(mut self, key: T, value: U) -> Self
-  where
-    T: Into<String>,
-    U: Into<Value>,
-  {
-    self.properties.insert(key.into(), value.into());
-    self
-  }
-
-  pub fn properties<T, U, I>(mut self, iter: I) -> Self
-  where
-    I: IntoIterator<Item = (T, U)>,
-    T: Into<String>,
-    U: Into<Value>,
-  {
-    self
-      .properties
-      .extend(iter.into_iter().map(|(k, v)| (k.into(), v.into())));
-    self
-  }
-
-  pub fn build(self) -> Result<Method> {
+  pub fn build(self) -> Result<Method<T>> {
     let id: DID = self.id.ok_or(Error::InvalidBuilder {
       name: "Method",
       error: "Missing `id`",
@@ -101,6 +80,29 @@ impl MethodBuilder {
   }
 }
 
+impl MethodBuilder {
+  pub fn property<K, V>(mut self, key: K, value: V) -> Self
+  where
+    K: Into<String>,
+    V: Into<Value>,
+  {
+    self.properties.insert(key.into(), value.into());
+    self
+  }
+
+  pub fn properties<K, V, I>(mut self, iter: I) -> Self
+  where
+    I: IntoIterator<Item = (K, V)>,
+    K: Into<String>,
+    V: Into<Value>,
+  {
+    self
+      .properties
+      .extend(iter.into_iter().map(|(k, v)| (k.into(), v.into())));
+    self
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -108,7 +110,7 @@ mod tests {
   #[test]
   #[should_panic = "Missing `id`"]
   fn test_missing_id() {
-    MethodBuilder::new()
+    let _: Method = MethodBuilder::default()
       .controller("did:example:123".parse().unwrap())
       .key_type(MethodType::Ed25519VerificationKey2018)
       .key_data(MethodData::PublicKeyBase58("".into()))
@@ -119,7 +121,7 @@ mod tests {
   #[test]
   #[should_panic = "Missing `key_type`"]
   fn test_missing_key_type() {
-    MethodBuilder::new()
+    let _: Method = MethodBuilder::default()
       .id("did:example:123".parse().unwrap())
       .controller("did:example:123".parse().unwrap())
       .key_data(MethodData::PublicKeyBase58("".into()))
@@ -130,7 +132,7 @@ mod tests {
   #[test]
   #[should_panic = "Missing `key_data`"]
   fn test_missing_key_data() {
-    MethodBuilder::new()
+    let _: Method = MethodBuilder::default()
       .id("did:example:123".parse().unwrap())
       .controller("did:example:123".parse().unwrap())
       .key_type(MethodType::Ed25519VerificationKey2018)
@@ -141,7 +143,7 @@ mod tests {
   #[test]
   #[should_panic = "Missing `controller`"]
   fn test_missing_controller() {
-    MethodBuilder::new()
+    let _: Method = MethodBuilder::default()
       .id("did:example:123".parse().unwrap())
       .key_type(MethodType::Ed25519VerificationKey2018)
       .key_data(MethodData::PublicKeyBase58("".into()))
