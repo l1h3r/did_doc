@@ -88,12 +88,13 @@ impl<T> OrderedSet<T> {
       .position(|item| item == current || *item == replacement);
 
     if let Some(index) = index {
-      let tail: Vec<T> = self.0.drain(index..).collect();
-      let iter: _ = tail
-        .into_iter()
-        .filter(|item| item != current && *item != replacement);
+      let keep: Vec<T> = self
+        .0
+        .drain(index..)
+        .filter(|item| item != current && *item != replacement)
+        .collect();
 
-      self.0.extend(iter);
+      self.0.extend(keep);
       self.0.insert(index, replacement);
       self.0.make_contiguous();
     }
