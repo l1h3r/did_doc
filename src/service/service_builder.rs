@@ -1,5 +1,5 @@
 use alloc::string::String;
-use did::DID;
+use did_url::DID;
 use url::Url;
 
 use crate::error::Error;

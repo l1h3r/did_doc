@@ -3,7 +3,7 @@ use core::fmt::Display;
 use core::fmt::Error;
 use core::fmt::Formatter;
 use core::fmt::Result;
-use did::DID;
+use did_url::DID;
 use serde_json::to_string;
 use serde_json::to_string_pretty;
 use url::Url;

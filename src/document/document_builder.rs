@@ -1,7 +1,7 @@
 use alloc::string::String;
 use alloc::vec::Vec;
 use core::convert::TryInto as _;
-use did::DID;
+use did_url::DID;
 use url::Url;
 
 use crate::document::Document;

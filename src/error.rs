@@ -18,7 +18,7 @@ pub enum Error {
     error: &'static str,
   },
   InvalidDID {
-    error: did::Error,
+    error: did_url::Error,
   },
 }
 
@@ -35,8 +35,8 @@ impl Display for Error {
   }
 }
 
-impl From<did::Error> for Error {
-  fn from(other: did::Error) -> Self {
+impl From<did_url::Error> for Error {
+  fn from(other: did_url::Error) -> Self {
     Self::InvalidDID { error: other }
   }
 }
