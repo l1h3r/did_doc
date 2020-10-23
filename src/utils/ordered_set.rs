@@ -6,13 +6,17 @@ use core::fmt::Debug;
 use core::fmt::Formatter;
 use core::fmt::Result as FmtResult;
 use core::ops::Deref;
+use serde::Deserialize;
 
 use crate::error::Error;
 use crate::error::Result;
 
 #[derive(Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Deserialize, Serialize)]
 #[repr(transparent)]
-#[serde(transparent)]
+#[serde(
+  bound(deserialize = "T: PartialEq + Deserialize<'de>"),
+  try_from = "Vec<T>"
+)]
 pub struct OrderedSet<T>(VecDeque<T>);
 
 impl<T> OrderedSet<T> {
