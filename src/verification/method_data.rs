@@ -17,18 +17,13 @@ pub enum MethodData {
 impl MethodData {
   pub fn try_decode(&self) -> Result<Vec<u8>> {
     match self {
-      Self::PublicKeyBase58(inner) => {
-        bs58::decode(inner)
-          .into_vec()
-          .map_err(|_| Error::InvalidKey { error: "oh no" })
-      }
+      Self::PublicKeyBase58(inner) => bs58::decode(inner)
+        .into_vec()
+        .map_err(|_| Error::InvalidKey { error: "oh no" }),
       Self::PublicKeyHex(inner) => {
-        hex::decode(inner)
-          .map_err(|_| Error::InvalidKey { error: "oh no" })
+        hex::decode(inner).map_err(|_| Error::InvalidKey { error: "oh no" })
       }
-      Self::PublicKeyJwk(_) => {
-        Err(Error::InvalidKey { error: "oh no" })
-      }
+      Self::PublicKeyJwk(_) => Err(Error::InvalidKey { error: "oh no" }),
     }
   }
 }
