@@ -12,6 +12,8 @@ extern crate std;
 #[macro_use]
 extern crate serde;
 
+pub extern crate url;
+
 mod document;
 mod error;
 mod service;
@@ -29,6 +31,7 @@ pub use self::service::ServiceBuilder;
 
 pub use self::utils::Object;
 pub use self::utils::OrderedSet;
+pub use self::utils::Value;
 
 pub use self::verification::Method;
 pub use self::verification::MethodBuilder;

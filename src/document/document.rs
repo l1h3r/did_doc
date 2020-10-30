@@ -133,15 +133,34 @@ impl<T> Document<T> {
     &mut self.properties
   }
 
-  pub fn resolve_method<'a, I, S>(&self, ident: I, scope: S) -> Option<MethodWrap>
+  pub fn map<U, F>(self, f: F) -> Document<U>
+  where
+    F: FnOnce(T) -> U,
+  {
+    Document {
+      id: self.id,
+      controller: self.controller,
+      also_known_as: self.also_known_as,
+      verification_method: self.verification_method,
+      authentication: self.authentication,
+      assertion_method: self.assertion_method,
+      key_agreement: self.key_agreement,
+      capability_delegation: self.capability_delegation,
+      capability_invocation: self.capability_invocation,
+      service: self.service,
+      properties: f(self.properties),
+    }
+  }
+
+  pub fn resolve<'a, I, S>(&self, ident: I, scope: S) -> Option<MethodWrap>
   where
     I: Into<MethodIndex<'a>>,
     S: Into<Option<MethodScope>>,
   {
-    self.resolve_method_(ident.into(), scope.into().unwrap_or_default())
+    self.resolve_method(ident.into(), scope.into().unwrap_or_default())
   }
 
-  fn resolve_method_(&self, ident: MethodIndex, scope: MethodScope) -> Option<MethodWrap> {
+  fn resolve_method(&self, ident: MethodIndex, scope: MethodScope) -> Option<MethodWrap> {
     let iter = match scope {
       MethodScope::VerificationMethod => return self.resolve_verification_method(ident),
       MethodScope::Authentication => self.authentication.iter(),
@@ -153,9 +172,9 @@ impl<T> Document<T> {
 
     iter
       .enumerate()
-      .find(|(index, method)| ident == *index || Self::matches_fragment(method.id(), ident))
+      .find(|(index, method)| ident == *index || ident.matches(method.id()))
       .and_then(|(index, method)| match method {
-        MethodRef::Refer(did) => self.resolve_method(did.fragment().expect("infallible"), None),
+        MethodRef::Refer(did) => self.resolve(did.fragment()?, None),
         MethodRef::Embed(method) => Some(MethodWrap::new(index, method)),
       })
   }
@@ -165,12 +184,8 @@ impl<T> Document<T> {
       .verification_method
       .iter()
       .enumerate()
-      .find(|(index, method)| ident == *index || Self::matches_fragment(method.id(), ident))
+      .find(|(index, method)| ident == *index || ident.matches(method.id()))
       .map(|(index, method)| MethodWrap::new(index, method))
-  }
-
-  fn matches_fragment(did: &DID, ident: MethodIndex) -> bool {
-    matches!(did.fragment(), Some(fragment) if ident == fragment)
   }
 }
 
