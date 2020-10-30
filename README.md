@@ -1,5 +1,15 @@
 # DID Document
 
+**A library for Decentralized Identifier (DID) Documents**
+
+---
+
+## References
+
+- [DID Core](https://www.w3.org/TR/did-core/)
+
+<br>
+
 #### License
 
 <sup>
