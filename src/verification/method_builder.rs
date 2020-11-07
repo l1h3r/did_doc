@@ -9,6 +9,11 @@ use crate::verification::Method;
 use crate::verification::MethodData;
 use crate::verification::MethodType;
 
+const ERR_MI: &str = "Missing `id`";
+const ERR_MC: &str = "Missing `controller`";
+const ERR_MKT: &str = "Missing `key_type`";
+const ERR_MKD: &str = "Missing `key_data`";
+
 #[derive(Clone, Debug, Default)]
 pub struct MethodBuilder<T = Object> {
   id: Option<DID>,
@@ -52,22 +57,22 @@ impl<T> MethodBuilder<T> {
   pub fn build(self) -> Result<Method<T>> {
     let id: DID = self.id.ok_or(Error::InvalidBuilder {
       name: "Method",
-      error: "Missing `id`",
+      error: ERR_MI,
     })?;
 
     let controller: DID = self.controller.ok_or(Error::InvalidBuilder {
       name: "Method",
-      error: "Missing `controller`",
+      error: ERR_MC,
     })?;
 
     let key_type: MethodType = self.key_type.ok_or(Error::InvalidBuilder {
       name: "Method",
-      error: "Missing `key_type`",
+      error: ERR_MKT,
     })?;
 
     let key_data: MethodData = self.key_data.ok_or(Error::InvalidBuilder {
       name: "Method",
-      error: "Missing `key_data`",
+      error: ERR_MKD,
     })?;
 
     Ok(Method {

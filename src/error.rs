@@ -7,14 +7,11 @@ pub type Result<T, E = Error> = core::result::Result<T, E>;
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Error {
+  Message {
+    error: &'static str,
+  },
   InvalidBuilder {
     name: &'static str,
-    error: &'static str,
-  },
-  InvalidSet {
-    error: &'static str,
-  },
-  InvalidKey {
     error: &'static str,
   },
   InvalidDID {
@@ -22,14 +19,19 @@ pub enum Error {
   },
 }
 
+impl Error {
+  pub const fn message(error: &'static str) -> Self {
+    Self::Message { error }
+  }
+}
+
 impl Display for Error {
   fn fmt(&self, f: &mut Formatter) -> FmtResult {
     match self {
+      Self::Message { error } => f.write_str(error),
       Self::InvalidBuilder { name, error } => {
         f.write_fmt(format_args!("Invalid Builder({}): {}", name, error))
       }
-      Self::InvalidSet { error } => f.write_fmt(format_args!("Invalid Set: {}", error)),
-      Self::InvalidKey { error } => f.write_fmt(format_args!("Invalid Key: {}", error)),
       Self::InvalidDID { error } => Display::fmt(error, f),
     }
   }

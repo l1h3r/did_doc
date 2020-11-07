@@ -77,3 +77,9 @@ where
     }
   }
 }
+
+impl<T> AsRef<DID> for Method<T> {
+  fn as_ref(&self) -> &DID {
+    self.id()
+  }
+}

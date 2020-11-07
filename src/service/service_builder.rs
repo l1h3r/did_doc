@@ -8,6 +8,10 @@ use crate::service::Service;
 use crate::utils::Object;
 use crate::utils::Value;
 
+const ERR_MI: &str = "Missing `id`";
+const ERR_MT: &str = "Missing `type`";
+const ERR_MS: &str = "Missing `service_endpoint`";
+
 #[derive(Clone, Debug, Default)]
 pub struct ServiceBuilder<T = Object> {
   id: Option<DID>,
@@ -44,17 +48,17 @@ impl<T> ServiceBuilder<T> {
   pub fn build(self) -> Result<Service<T>> {
     let id: DID = self.id.ok_or(Error::InvalidBuilder {
       name: "Service",
-      error: "Missing `id`",
+      error: ERR_MI,
     })?;
 
     let type_: String = self.type_.ok_or(Error::InvalidBuilder {
       name: "Service",
-      error: "Missing `type`",
+      error: ERR_MT,
     })?;
 
     let service_endpoint: Url = self.service_endpoint.ok_or(Error::InvalidBuilder {
       name: "Service",
-      error: "Missing `service_endpoint`",
+      error: ERR_MS,
     })?;
 
     Ok(Service {

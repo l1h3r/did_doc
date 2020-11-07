@@ -10,41 +10,45 @@ use serde_json::to_string_pretty;
 use url::Url;
 
 use crate::service::Service;
+use crate::utils::DIDKey;
 use crate::utils::Object;
 use crate::utils::OrderedSet;
 use crate::verification::Method;
-use crate::verification::MethodIndex;
+use crate::verification::MethodQuery;
 use crate::verification::MethodRef;
 use crate::verification::MethodScope;
 use crate::verification::MethodWrap;
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[rustfmt::skip]
-pub struct Document<T = Object> {
+pub struct Document<T = Object, U = Object, V = Object> where U: PartialEq {
   pub(crate) id: DID,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub(crate) controller: Option<DID>,
   #[serde(default, rename = "alsoKnownAs", skip_serializing_if = "Vec::is_empty")]
   pub(crate) also_known_as: Vec<Url>,
   #[serde(default, rename = "verificationMethod", skip_serializing_if = "OrderedSet::is_empty")]
-  pub(crate) verification_method: OrderedSet<Method>,
+  pub(crate) verification_method: OrderedSet<DIDKey<Method<U>>>,
   #[serde(default, skip_serializing_if = "OrderedSet::is_empty")]
-  pub(crate) authentication: OrderedSet<MethodRef>,
+  pub(crate) authentication: OrderedSet<DIDKey<MethodRef<U>>>,
   #[serde(default, rename = "assertionMethod", skip_serializing_if = "OrderedSet::is_empty")]
-  pub(crate) assertion_method: OrderedSet<MethodRef>,
+  pub(crate) assertion_method: OrderedSet<DIDKey<MethodRef<U>>>,
   #[serde(default, rename = "keyAgreement", skip_serializing_if = "OrderedSet::is_empty")]
-  pub(crate) key_agreement: OrderedSet<MethodRef>,
+  pub(crate) key_agreement: OrderedSet<DIDKey<MethodRef<U>>>,
   #[serde(default, rename = "capabilityDelegation", skip_serializing_if = "OrderedSet::is_empty")]
-  pub(crate) capability_delegation: OrderedSet<MethodRef>,
+  pub(crate) capability_delegation: OrderedSet<DIDKey<MethodRef<U>>>,
   #[serde(default, rename = "capabilityInvocation", skip_serializing_if = "OrderedSet::is_empty")]
-  pub(crate) capability_invocation: OrderedSet<MethodRef>,
+  pub(crate) capability_invocation: OrderedSet<DIDKey<MethodRef<U>>>,
   #[serde(default, skip_serializing_if = "Vec::is_empty")]
-  pub(crate) service: Vec<Service>,
+  pub(crate) service: Vec<Service<V>>,
   #[serde(flatten)]
   pub(crate) properties: T,
 }
 
-impl<T> Document<T> {
+impl<T, U, V> Document<T, U, V>
+where
+  U: PartialEq,
+{
   pub fn id(&self) -> &DID {
     &self.id
   }
@@ -69,59 +73,59 @@ impl<T> Document<T> {
     &mut self.also_known_as
   }
 
-  pub fn verification_method(&self) -> &OrderedSet<Method> {
+  pub fn verification_method(&self) -> &OrderedSet<DIDKey<Method<U>>> {
     &self.verification_method
   }
 
-  pub fn verification_method_mut(&mut self) -> &mut OrderedSet<Method> {
+  pub fn verification_method_mut(&mut self) -> &mut OrderedSet<DIDKey<Method<U>>> {
     &mut self.verification_method
   }
 
-  pub fn authentication(&self) -> &OrderedSet<MethodRef> {
+  pub fn authentication(&self) -> &OrderedSet<DIDKey<MethodRef<U>>> {
     &self.authentication
   }
 
-  pub fn authentication_mut(&mut self) -> &mut OrderedSet<MethodRef> {
+  pub fn authentication_mut(&mut self) -> &mut OrderedSet<DIDKey<MethodRef<U>>> {
     &mut self.authentication
   }
 
-  pub fn assertion_method(&self) -> &OrderedSet<MethodRef> {
+  pub fn assertion_method(&self) -> &OrderedSet<DIDKey<MethodRef<U>>> {
     &self.assertion_method
   }
 
-  pub fn assertion_method_mut(&mut self) -> &mut OrderedSet<MethodRef> {
+  pub fn assertion_method_mut(&mut self) -> &mut OrderedSet<DIDKey<MethodRef<U>>> {
     &mut self.assertion_method
   }
 
-  pub fn key_agreement(&self) -> &OrderedSet<MethodRef> {
+  pub fn key_agreement(&self) -> &OrderedSet<DIDKey<MethodRef<U>>> {
     &self.key_agreement
   }
 
-  pub fn key_agreement_mut(&mut self) -> &mut OrderedSet<MethodRef> {
+  pub fn key_agreement_mut(&mut self) -> &mut OrderedSet<DIDKey<MethodRef<U>>> {
     &mut self.key_agreement
   }
 
-  pub fn capability_delegation(&self) -> &OrderedSet<MethodRef> {
+  pub fn capability_delegation(&self) -> &OrderedSet<DIDKey<MethodRef<U>>> {
     &self.capability_delegation
   }
 
-  pub fn capability_delegation_mut(&mut self) -> &mut OrderedSet<MethodRef> {
+  pub fn capability_delegation_mut(&mut self) -> &mut OrderedSet<DIDKey<MethodRef<U>>> {
     &mut self.capability_delegation
   }
 
-  pub fn capability_invocation(&self) -> &OrderedSet<MethodRef> {
+  pub fn capability_invocation(&self) -> &OrderedSet<DIDKey<MethodRef<U>>> {
     &self.capability_invocation
   }
 
-  pub fn capability_invocation_mut(&mut self) -> &mut OrderedSet<MethodRef> {
+  pub fn capability_invocation_mut(&mut self) -> &mut OrderedSet<DIDKey<MethodRef<U>>> {
     &mut self.capability_invocation
   }
 
-  pub fn service(&self) -> &[Service] {
+  pub fn service(&self) -> &[Service<V>] {
     &self.service
   }
 
-  pub fn service_mut(&mut self) -> &mut Vec<Service> {
+  pub fn service_mut(&mut self) -> &mut Vec<Service<V>> {
     &mut self.service
   }
 
@@ -133,9 +137,9 @@ impl<T> Document<T> {
     &mut self.properties
   }
 
-  pub fn map<U, F>(self, f: F) -> Document<U>
+  pub fn map<A, F>(self, f: F) -> Document<A, U, V>
   where
-    F: FnOnce(T) -> U,
+    F: FnOnce(T) -> A,
   {
     Document {
       id: self.id,
@@ -152,17 +156,16 @@ impl<T> Document<T> {
     }
   }
 
-  pub fn resolve<'a, I, S>(&self, ident: I, scope: S) -> Option<MethodWrap>
+  pub fn resolve<'a, Q>(&self, query: Q) -> Option<MethodWrap<U>>
   where
-    I: Into<MethodIndex<'a>>,
-    S: Into<Option<MethodScope>>,
+    Q: Into<MethodQuery<'a>>,
   {
-    self.resolve_method(ident.into(), scope.into().unwrap_or_default())
+    self.resolve_method(query.into())
   }
 
-  fn resolve_method(&self, ident: MethodIndex, scope: MethodScope) -> Option<MethodWrap> {
-    let iter = match scope {
-      MethodScope::VerificationMethod => return self.resolve_verification_method(ident),
+  fn resolve_method<'a>(&self, query: MethodQuery<'a>) -> Option<MethodWrap<U>> {
+    let iter = match query.scope {
+      MethodScope::VerificationMethod => return self.resolve_verification_method(query),
       MethodScope::Authentication => self.authentication.iter(),
       MethodScope::AssertionMethod => self.assertion_method.iter(),
       MethodScope::KeyAgreement => self.key_agreement.iter(),
@@ -172,26 +175,27 @@ impl<T> Document<T> {
 
     iter
       .enumerate()
-      .find(|(index, method)| ident == *index || ident.matches(method.id()))
-      .and_then(|(index, method)| match method {
-        MethodRef::Refer(did) => self.resolve(did.fragment()?, None),
-        MethodRef::Embed(method) => Some(MethodWrap::new(index, method)),
+      .find(|(index, method)| query.ident == *index || query.ident.matches(method.id()))
+      .and_then(|(index, method)| match method.as_ref() {
+        MethodRef::Refer(did) => self.resolve(did.fragment()?),
+        MethodRef::Embed(method) => Some(MethodWrap::new(method, index, query.scope)),
       })
   }
 
-  fn resolve_verification_method(&self, ident: MethodIndex) -> Option<MethodWrap> {
+  fn resolve_verification_method(&self, query: MethodQuery) -> Option<MethodWrap<U>> {
     self
       .verification_method
       .iter()
       .enumerate()
-      .find(|(index, method)| ident == *index || ident.matches(method.id()))
-      .map(|(index, method)| MethodWrap::new(index, method))
+      .find(|(index, method)| query.ident == *index || query.ident.matches(method.id()))
+      .map(|(index, method)| MethodWrap::new(method, index, MethodScope::VerificationMethod))
   }
 }
 
-impl<T> Display for Document<T>
+impl<T, U> Display for Document<T, U>
 where
   T: Serialize,
+  U: Serialize + PartialEq,
 {
   fn fmt(&self, f: &mut Formatter) -> Result {
     if f.alternate() {

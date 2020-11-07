@@ -8,27 +8,30 @@ use crate::document::Document;
 use crate::error::Error;
 use crate::error::Result;
 use crate::service::Service;
+use crate::utils::DIDKey;
 use crate::utils::Object;
 use crate::utils::Value;
 use crate::verification::Method;
 use crate::verification::MethodRef;
 
+const ERR_MI: &str = "Missing `id`";
+
 #[derive(Clone, Debug, Default)]
-pub struct DocumentBuilder<T = Object> {
+pub struct DocumentBuilder<T = Object, U = Object, V = Object> {
   id: Option<DID>,
   controller: Option<DID>,
   also_known_as: Vec<Url>,
-  verification_method: Vec<Method>,
-  authentication: Vec<MethodRef>,
-  assertion_method: Vec<MethodRef>,
-  key_agreement: Vec<MethodRef>,
-  capability_delegation: Vec<MethodRef>,
-  capability_invocation: Vec<MethodRef>,
-  service: Vec<Service>,
+  verification_method: Vec<DIDKey<Method<U>>>,
+  authentication: Vec<DIDKey<MethodRef<U>>>,
+  assertion_method: Vec<DIDKey<MethodRef<U>>>,
+  key_agreement: Vec<DIDKey<MethodRef<U>>>,
+  capability_delegation: Vec<DIDKey<MethodRef<U>>>,
+  capability_invocation: Vec<DIDKey<MethodRef<U>>>,
+  service: Vec<Service<V>>,
   properties: T,
 }
 
-impl<T> DocumentBuilder<T> {
+impl<T, U, V> DocumentBuilder<T, U, V> {
   pub fn new(properties: T) -> Self {
     Self {
       id: None,
@@ -60,44 +63,47 @@ impl<T> DocumentBuilder<T> {
     self
   }
 
-  pub fn verification_method(mut self, value: Method) -> Self {
-    self.verification_method.push(value);
+  pub fn verification_method(mut self, value: Method<U>) -> Self {
+    self.verification_method.push(DIDKey::new(value));
     self
   }
 
-  pub fn authentication(mut self, value: impl Into<MethodRef>) -> Self {
-    self.authentication.push(value.into());
+  pub fn authentication(mut self, value: impl Into<MethodRef<U>>) -> Self {
+    self.authentication.push(DIDKey::new(value.into()));
     self
   }
 
-  pub fn assertion_method(mut self, value: impl Into<MethodRef>) -> Self {
-    self.assertion_method.push(value.into());
+  pub fn assertion_method(mut self, value: impl Into<MethodRef<U>>) -> Self {
+    self.assertion_method.push(DIDKey::new(value.into()));
     self
   }
 
-  pub fn key_agreement(mut self, value: impl Into<MethodRef>) -> Self {
-    self.key_agreement.push(value.into());
+  pub fn key_agreement(mut self, value: impl Into<MethodRef<U>>) -> Self {
+    self.key_agreement.push(DIDKey::new(value.into()));
     self
   }
 
-  pub fn capability_delegation(mut self, value: impl Into<MethodRef>) -> Self {
-    self.capability_delegation.push(value.into());
+  pub fn capability_delegation(mut self, value: impl Into<MethodRef<U>>) -> Self {
+    self.capability_delegation.push(DIDKey::new(value.into()));
     self
   }
 
-  pub fn capability_invocation(mut self, value: impl Into<MethodRef>) -> Self {
-    self.capability_invocation.push(value.into());
+  pub fn capability_invocation(mut self, value: impl Into<MethodRef<U>>) -> Self {
+    self.capability_invocation.push(DIDKey::new(value.into()));
     self
   }
 
-  pub fn service(mut self, value: Service) {
+  pub fn service(mut self, value: Service<V>) {
     self.service.push(value);
   }
 
-  pub fn build(self) -> Result<Document<T>> {
+  pub fn build(self) -> Result<Document<T, U, V>>
+  where
+    U: PartialEq,
+  {
     let id: DID = self.id.ok_or(Error::InvalidBuilder {
       name: "Document",
-      error: "Missing `id`",
+      error: ERR_MI,
     })?;
 
     // TODO: Validate key identifiers

@@ -1,15 +1,18 @@
-use alloc::collections::vec_deque::Iter;
-use alloc::collections::VecDeque;
 use alloc::vec::Vec;
+use core::borrow::Borrow;
 use core::convert::TryFrom;
 use core::fmt::Debug;
 use core::fmt::Formatter;
 use core::fmt::Result as FmtResult;
+use core::iter::FromIterator;
 use core::ops::Deref;
+use core::slice::Iter;
 use serde::Deserialize;
 
 use crate::error::Error;
 use crate::error::Result;
+
+const ERR_DUP: &str = "Duplicate Item in Ordered Set";
 
 #[derive(Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Deserialize, Serialize)]
 #[repr(transparent)]
@@ -17,15 +20,15 @@ use crate::error::Result;
   bound(deserialize = "T: PartialEq + Deserialize<'de>"),
   try_from = "Vec<T>"
 )]
-pub struct OrderedSet<T>(VecDeque<T>);
+pub struct OrderedSet<T>(Vec<T>);
 
 impl<T> OrderedSet<T> {
-  pub fn new() -> Self {
-    Self(VecDeque::new())
+  pub const fn new() -> Self {
+    Self(Vec::new())
   }
 
   pub fn with_capacity(capacity: usize) -> Self {
-    Self(VecDeque::with_capacity(capacity))
+    Self(Vec::with_capacity(capacity))
   }
 
   pub fn len(&self) -> usize {
@@ -41,19 +44,27 @@ impl<T> OrderedSet<T> {
   }
 
   pub fn head(&self) -> Option<&T> {
-    self.0.front()
+    self.0.first()
   }
 
   pub fn tail(&self) -> Option<&T> {
-    self.0.back()
+    self.0.last()
   }
 
   pub fn as_slice(&self) -> &[T] {
-    self.0.as_slices().0
+    &self.0
   }
 
   pub fn into_vec(self) -> Vec<T> {
-    self.0.into_iter().collect()
+    self.0
+  }
+
+  pub fn contains<U>(&self, item: &U) -> bool
+  where
+    T: AsRef<U>,
+    U: PartialEq + ?Sized,
+  {
+    self.0.iter().any(|other| other.as_ref() == item)
   }
 
   pub fn append(&mut self, item: T) -> bool
@@ -63,8 +74,7 @@ impl<T> OrderedSet<T> {
     if self.0.contains(&item) {
       false
     } else {
-      self.0.push_back(item);
-      self.0.make_contiguous();
+      self.0.push(item);
       true
     }
   }
@@ -76,32 +86,48 @@ impl<T> OrderedSet<T> {
     if self.0.contains(&item) {
       false
     } else {
-      self.0.push_front(item);
-      self.0.make_contiguous();
+      self.0.insert(0, item);
       true
     }
   }
 
-  pub fn replace(&mut self, current: &T, replacement: T)
+  #[inline]
+  pub fn replace<U>(&mut self, current: &U, update: T) -> bool
+  where
+    T: PartialEq + Borrow<U>,
+    U: PartialEq + ?Sized,
+  {
+    self.change(update, |item, update| {
+      item.borrow() == current || item == update
+    })
+  }
+
+  #[inline]
+  pub fn update(&mut self, update: T) -> bool
   where
     T: PartialEq,
   {
-    let index: Option<usize> = self
-      .0
-      .iter()
-      .position(|item| item == current || *item == replacement);
+    self.change(update, |item, update| item == update)
+  }
+
+  fn change<F>(&mut self, data: T, f: F) -> bool
+  where
+    F: Fn(&T, &T) -> bool,
+  {
+    let index: Option<usize> = self.0.iter().position(|item| f(item, &data));
 
     if let Some(index) = index {
       let keep: Vec<T> = self
         .0
         .drain(index..)
-        .filter(|item| item != current && *item != replacement)
+        .filter(|item| !f(item, &data))
         .collect();
 
       self.0.extend(keep);
-      self.0.insert(index, replacement);
-      self.0.make_contiguous();
+      self.0.insert(index, data);
     }
+
+    index.is_some()
   }
 }
 
@@ -118,13 +144,34 @@ impl<T> Deref for OrderedSet<T> {
   type Target = [T];
 
   fn deref(&self) -> &Self::Target {
-    self.as_slice()
+    &self.0
   }
 }
 
 impl<T> Default for OrderedSet<T> {
   fn default() -> Self {
     Self::new()
+  }
+}
+
+impl<T> FromIterator<T> for OrderedSet<T>
+where
+  T: PartialEq,
+{
+  fn from_iter<I>(iter: I) -> Self
+  where
+    I: IntoIterator<Item = T>,
+  {
+    let iter: _ = iter.into_iter();
+    let size: usize = iter.size_hint().1.unwrap_or(0);
+
+    let mut this: Self = Self::with_capacity(size);
+
+    for item in iter {
+      this.append(item);
+    }
+
+    this
   }
 }
 
@@ -139,9 +186,7 @@ where
 
     for item in other {
       if !this.append(item) {
-        return Err(Error::InvalidSet {
-          error: "Duplicate Item",
-        });
+        return Err(Error::message(ERR_DUP));
       }
     }
 
@@ -152,6 +197,11 @@ where
 #[cfg(test)]
 mod tests {
   use super::*;
+  use alloc::vec;
+  use did_url::DID;
+
+  use crate::utils::DIDKey;
+  use crate::verification::MethodRef;
 
   #[test]
   fn test_works() {
@@ -182,5 +232,44 @@ mod tests {
     set.replace(&"a", "c");
 
     assert_eq!(set.as_slice(), &["c", "b"]);
+  }
+
+  #[test]
+  fn test_from_vec_valid() {
+    let source: Vec<u8> = vec![3, 1, 2, 0];
+    let oset: OrderedSet<u8> = OrderedSet::try_from(source).unwrap();
+
+    assert_eq!(&*oset, &[3, 1, 2, 0]);
+  }
+
+  #[test]
+  #[should_panic = "Duplicate Item"]
+  fn test_from_vec_invalid() {
+    let source: Vec<u8> = vec![1, 2, 2, 5];
+    let _: OrderedSet<u8> = OrderedSet::try_from(source).unwrap();
+  }
+
+  #[test]
+  fn test_collect() {
+    let source: Vec<u8> = vec![1, 2, 3, 3, 2, 4, 5, 1, 1];
+    let oset: OrderedSet<u8> = source.into_iter().collect();
+
+    assert_eq!(&*oset, &[1, 2, 3, 4, 5]);
+  }
+
+  #[test]
+  fn test_contains() {
+    let did1: DID = DID::parse("did:example:123").unwrap();
+    let did2: DID = DID::parse("did:example:456").unwrap();
+
+    let source: Vec<DIDKey<MethodRef>> = vec![
+      DIDKey::new(MethodRef::Refer(did1.clone())),
+      DIDKey::new(MethodRef::Refer(did2.clone())),
+    ];
+
+    let oset: OrderedSet<DIDKey<MethodRef>> = source.into_iter().collect();
+
+    assert!(oset.contains(&MethodRef::Refer(did1)));
+    assert!(oset.contains(&MethodRef::Refer(did2)));
   }
 }

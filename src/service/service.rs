@@ -68,3 +68,9 @@ where
     }
   }
 }
+
+impl<T> AsRef<DID> for Service<T> {
+  fn as_ref(&self) -> &DID {
+    self.id()
+  }
+}
