@@ -24,6 +24,7 @@ pub struct MethodBuilder<T = Object> {
 }
 
 impl<T> MethodBuilder<T> {
+  #[must_use]
   pub fn new(properties: T) -> Self {
     Self {
       id: None,
@@ -34,26 +35,31 @@ impl<T> MethodBuilder<T> {
     }
   }
 
+  #[must_use]
   pub fn id(mut self, value: DID) -> Self {
     self.id = Some(value);
     self
   }
 
+  #[must_use]
   pub fn controller(mut self, value: DID) -> Self {
     self.controller = Some(value);
     self
   }
 
+  #[must_use]
   pub fn key_type(mut self, value: MethodType) -> Self {
     self.key_type = Some(value);
     self
   }
 
+  #[must_use]
   pub fn key_data(mut self, value: MethodData) -> Self {
     self.key_data = Some(value);
     self
   }
 
+  #[must_use]
   pub fn build(self) -> Result<Method<T>> {
     let id: DID = self.id.ok_or(Error::InvalidBuilder {
       name: "Method",
@@ -86,6 +92,7 @@ impl<T> MethodBuilder<T> {
 }
 
 impl MethodBuilder {
+  #[must_use]
   pub fn property<K, V>(mut self, key: K, value: V) -> Self
   where
     K: Into<String>,
@@ -95,6 +102,7 @@ impl MethodBuilder {
     self
   }
 
+  #[must_use]
   pub fn properties<K, V, I>(mut self, iter: I) -> Self
   where
     I: IntoIterator<Item = (K, V)>,

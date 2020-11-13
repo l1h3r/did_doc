@@ -21,6 +21,7 @@ pub struct ServiceBuilder<T = Object> {
 }
 
 impl<T> ServiceBuilder<T> {
+  #[must_use]
   pub fn new(properties: T) -> Self {
     Self {
       id: None,
@@ -30,21 +31,25 @@ impl<T> ServiceBuilder<T> {
     }
   }
 
+  #[must_use]
   pub fn id(mut self, value: DID) -> Self {
     self.id = Some(value);
     self
   }
 
+  #[must_use]
   pub fn type_(mut self, value: impl Into<String>) -> Self {
     self.type_ = Some(value.into());
     self
   }
 
+  #[must_use]
   pub fn service_endpoint(mut self, value: Url) -> Self {
     self.service_endpoint = Some(value);
     self
   }
 
+  #[must_use]
   pub fn build(self) -> Result<Service<T>> {
     let id: DID = self.id.ok_or(Error::InvalidBuilder {
       name: "Service",
@@ -71,6 +76,7 @@ impl<T> ServiceBuilder<T> {
 }
 
 impl ServiceBuilder {
+  #[must_use]
   pub fn property<K, V>(mut self, key: K, value: V) -> Self
   where
     K: Into<String>,
@@ -80,6 +86,7 @@ impl ServiceBuilder {
     self
   }
 
+  #[must_use]
   pub fn properties<K, V, I>(mut self, iter: I) -> Self
   where
     I: IntoIterator<Item = (K, V)>,

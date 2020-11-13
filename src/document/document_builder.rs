@@ -32,6 +32,7 @@ pub struct DocumentBuilder<T = Object, U = Object, V = Object> {
 }
 
 impl<T, U, V> DocumentBuilder<T, U, V> {
+  #[must_use]
   pub fn new(properties: T) -> Self {
     Self {
       id: None,
@@ -48,55 +49,66 @@ impl<T, U, V> DocumentBuilder<T, U, V> {
     }
   }
 
+  #[must_use]
   pub fn id(mut self, value: DID) -> Self {
     self.id = Some(value);
     self
   }
 
+  #[must_use]
   pub fn controller(mut self, value: DID) -> Self {
     self.controller = Some(value);
     self
   }
 
+  #[must_use]
   pub fn also_known_as(mut self, value: Url) -> Self {
     self.also_known_as.push(value);
     self
   }
 
+  #[must_use]
   pub fn verification_method(mut self, value: Method<U>) -> Self {
     self.verification_method.push(DIDKey::new(value));
     self
   }
 
+  #[must_use]
   pub fn authentication(mut self, value: impl Into<MethodRef<U>>) -> Self {
     self.authentication.push(DIDKey::new(value.into()));
     self
   }
 
+  #[must_use]
   pub fn assertion_method(mut self, value: impl Into<MethodRef<U>>) -> Self {
     self.assertion_method.push(DIDKey::new(value.into()));
     self
   }
 
+  #[must_use]
   pub fn key_agreement(mut self, value: impl Into<MethodRef<U>>) -> Self {
     self.key_agreement.push(DIDKey::new(value.into()));
     self
   }
 
+  #[must_use]
   pub fn capability_delegation(mut self, value: impl Into<MethodRef<U>>) -> Self {
     self.capability_delegation.push(DIDKey::new(value.into()));
     self
   }
 
+  #[must_use]
   pub fn capability_invocation(mut self, value: impl Into<MethodRef<U>>) -> Self {
     self.capability_invocation.push(DIDKey::new(value.into()));
     self
   }
 
+  #[must_use]
   pub fn service(mut self, value: Service<V>) {
     self.service.push(value);
   }
 
+  #[must_use]
   pub fn build(self) -> Result<Document<T, U, V>> {
     let id: DID = self.id.ok_or(Error::InvalidBuilder {
       name: "Document",
@@ -122,6 +134,7 @@ impl<T, U, V> DocumentBuilder<T, U, V> {
 }
 
 impl DocumentBuilder {
+  #[must_use]
   pub fn property<K, V>(mut self, key: K, value: V) -> Self
   where
     K: Into<String>,
@@ -131,6 +144,7 @@ impl DocumentBuilder {
     self
   }
 
+  #[must_use]
   pub fn properties<K, V, I>(mut self, iter: I) -> Self
   where
     I: IntoIterator<Item = (K, V)>,
