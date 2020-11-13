@@ -1,14 +1,16 @@
 use alloc::vec::Vec;
 use core::fmt::Display;
-use core::fmt::Error;
+use core::fmt::Error as FmtError;
 use core::fmt::Formatter;
-use core::fmt::Result;
+use core::fmt::Result as FmtResult;
 use did_url::DID;
 use serde::Serialize;
 use serde_json::to_string;
 use serde_json::to_string_pretty;
 use url::Url;
 
+use crate::error::Error;
+use crate::error::Result;
 use crate::service::Service;
 use crate::utils::DIDKey;
 use crate::utils::Object;
@@ -19,36 +21,35 @@ use crate::verification::MethodRef;
 use crate::verification::MethodScope;
 use crate::verification::MethodWrap;
 
+const ERR_VMNF: &str = "Verification Method Not Found";
+
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[rustfmt::skip]
-pub struct Document<T = Object, U = Object, V = Object> where U: PartialEq {
+pub struct Document<T = Object, U = Object, V = Object> {
   pub(crate) id: DID,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub(crate) controller: Option<DID>,
-  #[serde(default, rename = "alsoKnownAs", skip_serializing_if = "Vec::is_empty")]
+  #[serde(default = "Default::default", rename = "alsoKnownAs", skip_serializing_if = "Vec::is_empty")]
   pub(crate) also_known_as: Vec<Url>,
-  #[serde(default, rename = "verificationMethod", skip_serializing_if = "OrderedSet::is_empty")]
+  #[serde(default = "Default::default", rename = "verificationMethod", skip_serializing_if = "OrderedSet::is_empty")]
   pub(crate) verification_method: OrderedSet<DIDKey<Method<U>>>,
-  #[serde(default, skip_serializing_if = "OrderedSet::is_empty")]
+  #[serde(default = "Default::default", skip_serializing_if = "OrderedSet::is_empty")]
   pub(crate) authentication: OrderedSet<DIDKey<MethodRef<U>>>,
-  #[serde(default, rename = "assertionMethod", skip_serializing_if = "OrderedSet::is_empty")]
+  #[serde(default = "Default::default", rename = "assertionMethod", skip_serializing_if = "OrderedSet::is_empty")]
   pub(crate) assertion_method: OrderedSet<DIDKey<MethodRef<U>>>,
-  #[serde(default, rename = "keyAgreement", skip_serializing_if = "OrderedSet::is_empty")]
+  #[serde(default = "Default::default", rename = "keyAgreement", skip_serializing_if = "OrderedSet::is_empty")]
   pub(crate) key_agreement: OrderedSet<DIDKey<MethodRef<U>>>,
-  #[serde(default, rename = "capabilityDelegation", skip_serializing_if = "OrderedSet::is_empty")]
+  #[serde(default = "Default::default", rename = "capabilityDelegation", skip_serializing_if = "OrderedSet::is_empty")]
   pub(crate) capability_delegation: OrderedSet<DIDKey<MethodRef<U>>>,
-  #[serde(default, rename = "capabilityInvocation", skip_serializing_if = "OrderedSet::is_empty")]
+  #[serde(default = "Default::default", rename = "capabilityInvocation", skip_serializing_if = "OrderedSet::is_empty")]
   pub(crate) capability_invocation: OrderedSet<DIDKey<MethodRef<U>>>,
-  #[serde(default, skip_serializing_if = "Vec::is_empty")]
+  #[serde(default = "Default::default", skip_serializing_if = "Vec::is_empty")]
   pub(crate) service: Vec<Service<V>>,
   #[serde(flatten)]
   pub(crate) properties: T,
 }
 
-impl<T, U, V> Document<T, U, V>
-where
-  U: PartialEq,
-{
+impl<T, U, V> Document<T, U, V> {
   pub fn id(&self) -> &DID {
     &self.id
   }
@@ -163,6 +164,15 @@ where
     self.resolve_method(query.into())
   }
 
+  pub fn try_resolve<'a, Q>(&self, query: Q) -> Result<MethodWrap<U>>
+  where
+    Q: Into<MethodQuery<'a>>,
+  {
+    self
+      .resolve_method(query.into())
+      .ok_or_else(|| Error::message(ERR_VMNF))
+  }
+
   fn resolve_method<'a>(&self, query: MethodQuery<'a>) -> Option<MethodWrap<U>> {
     let iter = match query.scope {
       MethodScope::VerificationMethod => return self.resolve_verification_method(query),
@@ -192,16 +202,17 @@ where
   }
 }
 
-impl<T, U> Display for Document<T, U>
+impl<T, U, V> Display for Document<T, U, V>
 where
   T: Serialize,
-  U: Serialize + PartialEq,
+  U: Serialize,
+  V: Serialize,
 {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+  fn fmt(&self, f: &mut Formatter) -> FmtResult {
     if f.alternate() {
-      f.write_str(&to_string_pretty(self).map_err(|_| Error)?)
+      f.write_str(&to_string_pretty(self).map_err(|_| FmtError)?)
     } else {
-      f.write_str(&to_string(self).map_err(|_| Error)?)
+      f.write_str(&to_string(self).map_err(|_| FmtError)?)
     }
   }
 }

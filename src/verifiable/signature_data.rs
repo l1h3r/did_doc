@@ -29,6 +29,15 @@ impl SignatureData {
     matches!(self, Self::Signature(_))
   }
 
+  pub fn as_str(&self) -> &str {
+    match self {
+      SignatureData::None => "",
+      SignatureData::Jws(inner) => &*inner,
+      SignatureData::Proof(inner) => &*inner,
+      SignatureData::Signature(inner) => &*inner,
+    }
+  }
+
   pub fn try_jws(&self) -> Option<&str> {
     match self {
       SignatureData::None => None,

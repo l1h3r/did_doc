@@ -2,119 +2,160 @@ use alloc::vec::Vec;
 use core::fmt::Display;
 use core::fmt::Formatter;
 use core::fmt::Result as FmtResult;
-use core::iter::once;
 use core::ops::Deref;
 use core::ops::DerefMut;
 use serde::Serialize;
 
 use crate::document::Document;
-use crate::error::Error;
 use crate::error::Result;
 use crate::utils::Object;
-use crate::verifiable::LdDocument;
-use crate::verifiable::LdSignature;
+use crate::verifiable::SetSignature;
 use crate::verifiable::Signature;
+use crate::verifiable::SignatureDocument;
 use crate::verifiable::SignatureOptions;
+use crate::verifiable::SignatureReader;
+use crate::verifiable::SignatureSuite;
+use crate::verifiable::SignatureWriter;
+use crate::verifiable::TrySignature;
 use crate::verifiable::VerifiableProperties;
 use crate::verification::MethodQuery;
-use crate::verification::MethodWrap;
-
-const ERR_VMNF: &str = "Verification Method Not Found";
-const ERR_VMMF: &str = "Verification Method Missing Fragment";
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[repr(transparent)]
 #[serde(transparent)]
-pub struct VerifiableDocument<T = Object> {
-  document: Document<VerifiableProperties<T>>,
+pub struct VerifiableDocument<T = Object, U = Object, V = Object> {
+  document: Document<VerifiableProperties<T>, U, V>,
 }
 
-impl<T> VerifiableDocument<T> {
-  pub fn new(document: Document<T>) -> Self {
+impl<T, U, V> VerifiableDocument<T, U, V> {
+  pub fn new(document: Document<T, U, V>) -> Self {
     Self {
       document: document.map(VerifiableProperties::new),
     }
   }
 
-  pub fn with_proof(document: Document<T>, proof: Signature) -> Self {
+  pub fn with_proof(document: Document<T, U, V>, proof: Signature) -> Self {
     Self {
       document: document.map(|old| VerifiableProperties::with_proof(old, proof)),
     }
   }
 
-  pub fn sign<'a, S, Q>(&mut self, suite: &S, query: Q, secret: &[u8]) -> Result<()>
+  pub fn proof(&self) -> Option<&Signature> {
+    self.properties().proof()
+  }
+
+  pub fn proof_mut(&mut self) -> Option<&mut Signature> {
+    self.properties_mut().proof_mut()
+  }
+
+  pub fn sign<'a, Q, S>(&mut self, suite: S, query: Q, secret: &[u8]) -> Result<()>
   where
     T: Serialize,
-    S: LdSignature + ?Sized,
+    U: Serialize,
+    V: Serialize,
+    S: SignatureSuite,
     Q: Into<MethodQuery<'a>>,
   {
-    let method: MethodWrap<_> = self
-      .document
-      .resolve(query)
-      .ok_or_else(|| Error::message(ERR_VMNF))?;
+    let options: SignatureOptions = self.signature_options(query)?;
 
-    let fragment: &str = method
-      .id()
-      .fragment()
-      .ok_or_else(|| Error::message(ERR_VMMF))?;
-
-    let options: SignatureOptions = SignatureOptions {
-      verification_method: once('#').chain(fragment.chars()).collect(),
-      proof_purpose: None,
-      created: None,
-      nonce: None,
-      domain: None,
-    };
-
-    // TODO: Suite based on verification method type; needs to be customizable
-
-    self.sign_data(suite, options, secret)?;
+    SignatureDocument::sign_data(self, suite, options, secret)?;
 
     Ok(())
   }
 
-  pub fn verify<S>(&self, suite: &S) -> Result<()>
+  pub fn verify<S>(&self, suite: S) -> Result<()>
   where
     T: Serialize,
-    S: LdSignature + ?Sized,
+    U: Serialize,
+    V: Serialize,
+    S: SignatureSuite,
   {
-    // TODO: Suite based on verification method type; needs to be customizable
-
-    self.verify_data(suite)?;
+    SignatureDocument::verify_data(self, suite)?;
 
     Ok(())
+  }
+
+  pub fn sign_data<'a, D, Q, S>(
+    &self,
+    data: &mut D,
+    suite: S,
+    query: Q,
+    secret: &[u8],
+  ) -> Result<()>
+  where
+    D: Serialize + SetSignature,
+    S: SignatureSuite,
+    Q: Into<MethodQuery<'a>>,
+  {
+    let options: SignatureOptions = self.signature_options(query)?;
+    let mut target: SignatureWriter<D, T, U, V> = SignatureWriter::new(self, data);
+
+    SignatureDocument::sign_data(&mut target, suite, options, secret)?;
+
+    Ok(())
+  }
+
+  pub fn verify_data<D, S>(&self, data: &D, suite: S) -> Result<()>
+  where
+    D: Serialize + TrySignature,
+    S: SignatureSuite,
+  {
+    let target: SignatureReader<D, T, U, V> = SignatureReader::new(self, data);
+
+    SignatureDocument::verify_data(&target, suite)?;
+
+    Ok(())
+  }
+
+  pub(crate) fn signature_options<'a, Q>(&self, query: Q) -> Result<SignatureOptions>
+  where
+    Q: Into<MethodQuery<'a>>,
+  {
+    self
+      .document
+      .try_resolve(query)
+      .and_then(|method| method.try_into_fragment())
+      .map(SignatureOptions::new)
+  }
+
+  pub(crate) fn _resolve(&self, method: &str) -> Option<Vec<u8>> {
+    self.document.resolve(method)?.key_data().try_decode().ok()
   }
 }
 
-impl<T> Deref for VerifiableDocument<T> {
-  type Target = Document<VerifiableProperties<T>>;
+impl<T, U, V> Deref for VerifiableDocument<T, U, V> {
+  type Target = Document<VerifiableProperties<T>, U, V>;
 
   fn deref(&self) -> &Self::Target {
     &self.document
   }
 }
 
-impl<T> DerefMut for VerifiableDocument<T> {
+impl<T, U, V> DerefMut for VerifiableDocument<T, U, V> {
   fn deref_mut(&mut self) -> &mut Self::Target {
     &mut self.document
   }
 }
 
-impl<T> Display for VerifiableDocument<T>
+impl<T, U, V> Display for VerifiableDocument<T, U, V>
 where
   T: Serialize,
+  U: Serialize,
+  V: Serialize,
 {
   fn fmt(&self, f: &mut Formatter) -> FmtResult {
     Display::fmt(&self.document, f)
   }
 }
 
-impl<T> LdDocument for VerifiableDocument<T>
+impl<T, U, V> SignatureDocument for VerifiableDocument<T, U, V>
 where
   T: Serialize,
+  U: Serialize,
+  V: Serialize,
 {
   fn resolve_method(&self, method: &str) -> Option<Vec<u8>> {
-    self.document.resolve(method)?.key_data().try_decode().ok()
+    self._resolve(method)
   }
 
   fn try_signature(&self) -> Option<&Signature> {

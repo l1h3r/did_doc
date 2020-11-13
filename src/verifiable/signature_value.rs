@@ -28,6 +28,10 @@ impl SignatureValue {
     self.data = value;
   }
 
+  pub fn clear(&mut self) {
+    self.set(SignatureData::None);
+  }
+
   pub(crate) fn hide(&self) {
     self.hide.set(true);
   }

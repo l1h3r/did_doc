@@ -3,15 +3,15 @@ use serde::Serialize;
 
 use crate::error::Error;
 use crate::error::Result;
-use crate::verifiable::LdSignature;
 use crate::verifiable::Signature;
 use crate::verifiable::SignatureData;
 use crate::verifiable::SignatureOptions;
+use crate::verifiable::SignatureSuite;
 
 const ERR_VMNF: &str = "Verification Method Not Found";
 const ERR_SNF: &str = "Signature Not Found";
 
-pub trait LdDocument: Serialize + Sized {
+pub trait SignatureDocument: Serialize + Sized {
   fn resolve_method(&self, method: &str) -> Option<Vec<u8>>;
 
   fn try_signature(&self) -> Option<&Signature>;
@@ -20,9 +20,9 @@ pub trait LdDocument: Serialize + Sized {
 
   fn set_signature(&mut self, signature: Signature);
 
-  fn sign_data<T>(&mut self, suite: &T, options: SignatureOptions, secret: &[u8]) -> Result<()>
+  fn sign_data<T>(&mut self, suite: T, options: SignatureOptions, secret: &[u8]) -> Result<()>
   where
-    T: LdSignature + ?Sized,
+    T: SignatureSuite,
   {
     self.set_signature(Signature::new(suite.name(), options));
 
@@ -33,9 +33,9 @@ pub trait LdDocument: Serialize + Sized {
     Ok(())
   }
 
-  fn verify_data<T>(&self, suite: &T) -> Result<()>
+  fn verify_data<T>(&self, suite: T) -> Result<()>
   where
-    T: LdSignature + ?Sized,
+    T: SignatureSuite,
   {
     let signature: &Signature = self.signature()?;
 

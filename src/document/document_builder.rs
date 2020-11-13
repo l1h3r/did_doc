@@ -97,10 +97,7 @@ impl<T, U, V> DocumentBuilder<T, U, V> {
     self.service.push(value);
   }
 
-  pub fn build(self) -> Result<Document<T, U, V>>
-  where
-    U: PartialEq,
-  {
+  pub fn build(self) -> Result<Document<T, U, V>> {
     let id: DID = self.id.ok_or(Error::InvalidBuilder {
       name: "Document",
       error: ERR_MI,

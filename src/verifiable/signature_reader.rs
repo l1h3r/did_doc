@@ -1,32 +1,31 @@
 use alloc::vec::Vec;
 use serde::Serialize;
 
-use crate::verifiable::LdDocument;
 use crate::verifiable::Signature;
+use crate::verifiable::SignatureDocument;
 use crate::verifiable::TrySignature;
 use crate::verifiable::VerifiableDocument;
 
 #[derive(Debug, Serialize)]
-pub struct LdReader<'a, 'b, T, U> {
+pub struct SignatureReader<'a, 'b, D, T, U, V> {
   #[serde(skip)]
-  root: &'b VerifiableDocument<U>,
+  root: &'b VerifiableDocument<T, U, V>,
   #[serde(flatten)]
-  data: &'a T,
+  data: &'a D,
 }
 
-impl<'a, 'b, T, U> LdReader<'a, 'b, T, U> {
-  pub fn new(root: &'b VerifiableDocument<U>, data: &'a T) -> Self {
+impl<'a, 'b, D, T, U, V> SignatureReader<'a, 'b, D, T, U, V> {
+  pub fn new(root: &'b VerifiableDocument<T, U, V>, data: &'a D) -> Self {
     Self { root, data }
   }
 }
 
-impl<T, U> LdDocument for LdReader<'_, '_, T, U>
+impl<D, T, U, V> SignatureDocument for SignatureReader<'_, '_, D, T, U, V>
 where
-  T: Serialize + TrySignature,
-  U: Serialize,
+  D: Serialize + TrySignature,
 {
   fn resolve_method(&self, method: &str) -> Option<Vec<u8>> {
-    LdDocument::resolve_method(self.root, method)
+    self.root._resolve(method)
   }
 
   fn try_signature(&self) -> Option<&Signature> {
