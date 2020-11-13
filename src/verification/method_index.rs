@@ -10,9 +10,11 @@ impl<'a> MethodIndex<'a> {
   pub fn matches(&self, did: &DID) -> bool {
     match self {
       Self::Index(_) => false,
-      Self::Ident(ident) if ident.starts_with(DID::SCHEME) && !ident.ends_with('#') => ident
-        .rfind('#')
-        .map_or(false, |index| Self::matches_fragment(did, &ident[index + 1..])),
+      Self::Ident(ident) if ident.starts_with(DID::SCHEME) && !ident.ends_with('#') => {
+        ident.rfind('#').map_or(false, |index| {
+          Self::matches_fragment(did, &ident[index + 1..])
+        })
+      }
       Self::Ident(ident) if ident.starts_with('#') => Self::matches_fragment(did, &ident[1..]),
       Self::Ident(ident) => Self::matches_fragment(did, *ident),
     }
