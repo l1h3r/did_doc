@@ -23,38 +23,47 @@ const ERR_DUP: &str = "Duplicate Item in Ordered Set";
 pub struct OrderedSet<T>(Vec<T>);
 
 impl<T> OrderedSet<T> {
+  #[inline]
   pub const fn new() -> Self {
     Self(Vec::new())
   }
 
+  #[inline]
   pub fn with_capacity(capacity: usize) -> Self {
     Self(Vec::with_capacity(capacity))
   }
 
+  #[inline]
   pub fn len(&self) -> usize {
     self.0.len()
   }
 
+  #[inline]
   pub fn is_empty(&self) -> bool {
     self.0.is_empty()
   }
 
+  #[inline]
   pub fn iter(&self) -> Iter<T> {
     self.0.iter()
   }
 
+  #[inline]
   pub fn head(&self) -> Option<&T> {
     self.0.first()
   }
 
+  #[inline]
   pub fn tail(&self) -> Option<&T> {
     self.0.last()
   }
 
+  #[inline]
   pub fn as_slice(&self) -> &[T] {
     &self.0
   }
 
+  #[inline]
   pub fn into_vec(self) -> Vec<T> {
     self.0
   }
@@ -135,6 +144,7 @@ impl<T> Debug for OrderedSet<T>
 where
   T: Debug,
 {
+  #[inline]
   fn fmt(&self, f: &mut Formatter) -> FmtResult {
     f.debug_set().entries(self.iter()).finish()
   }
@@ -143,12 +153,14 @@ where
 impl<T> Deref for OrderedSet<T> {
   type Target = [T];
 
+  #[inline]
   fn deref(&self) -> &Self::Target {
     &self.0
   }
 }
 
 impl<T> Default for OrderedSet<T> {
+  #[inline]
   fn default() -> Self {
     Self::new()
   }

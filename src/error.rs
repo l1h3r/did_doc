@@ -5,6 +5,7 @@ use core::fmt::Result as FmtResult;
 
 pub type Result<T, E = Error> = core::result::Result<T, E>;
 
+/// Represents all possible errors that can occur in the crate.
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Error {
   Message {

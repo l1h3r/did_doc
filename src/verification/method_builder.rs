@@ -1,7 +1,6 @@
 use alloc::string::String;
 use did_url::DID;
 
-use crate::error::Error;
 use crate::error::Result;
 use crate::utils::Object;
 use crate::utils::Value;
@@ -9,22 +8,18 @@ use crate::verification::Method;
 use crate::verification::MethodData;
 use crate::verification::MethodType;
 
-const ERR_MI: &str = "Missing `id`";
-const ERR_MC: &str = "Missing `controller`";
-const ERR_MKT: &str = "Missing `key_type`";
-const ERR_MKD: &str = "Missing `key_data`";
-
+/// A `MethodBuilder` is used to generate a customized `Method`.
 #[derive(Clone, Debug, Default)]
 pub struct MethodBuilder<T = Object> {
-  id: Option<DID>,
-  controller: Option<DID>,
-  key_type: Option<MethodType>,
-  key_data: Option<MethodData>,
-  properties: T,
+  pub(crate) id: Option<DID>,
+  pub(crate) controller: Option<DID>,
+  pub(crate) key_type: Option<MethodType>,
+  pub(crate) key_data: Option<MethodData>,
+  pub(crate) properties: T,
 }
 
 impl<T> MethodBuilder<T> {
-  #[must_use]
+  /// Creates a new `MethodBuilder`.
   pub fn new(properties: T) -> Self {
     Self {
       id: None,
@@ -35,63 +30,42 @@ impl<T> MethodBuilder<T> {
     }
   }
 
+  /// Sets the `id` value of the generated verification `Method`.
   #[must_use]
   pub fn id(mut self, value: DID) -> Self {
     self.id = Some(value);
     self
   }
 
+  /// Sets the `controller` value of the generated verification `Method`.
   #[must_use]
   pub fn controller(mut self, value: DID) -> Self {
     self.controller = Some(value);
     self
   }
 
+  /// Sets the `type` value of the generated verification `Method`.
   #[must_use]
   pub fn key_type(mut self, value: MethodType) -> Self {
     self.key_type = Some(value);
     self
   }
 
+  /// Sets the `data` value of the generated verification `Method`.
   #[must_use]
   pub fn key_data(mut self, value: MethodData) -> Self {
     self.key_data = Some(value);
     self
   }
 
-  #[must_use]
+  /// Returns a new `Method` based on the `MethodBuilder` configuration.
   pub fn build(self) -> Result<Method<T>> {
-    let id: DID = self.id.ok_or(Error::InvalidBuilder {
-      name: "Method",
-      error: ERR_MI,
-    })?;
-
-    let controller: DID = self.controller.ok_or(Error::InvalidBuilder {
-      name: "Method",
-      error: ERR_MC,
-    })?;
-
-    let key_type: MethodType = self.key_type.ok_or(Error::InvalidBuilder {
-      name: "Method",
-      error: ERR_MKT,
-    })?;
-
-    let key_data: MethodData = self.key_data.ok_or(Error::InvalidBuilder {
-      name: "Method",
-      error: ERR_MKD,
-    })?;
-
-    Ok(Method {
-      id,
-      controller,
-      key_type,
-      key_data,
-      properties: self.properties,
-    })
+    Method::from_builder(self)
   }
 }
 
 impl MethodBuilder {
+  /// Adds a new custom property to the generated `Method`.
   #[must_use]
   pub fn property<K, V>(mut self, key: K, value: V) -> Self
   where
@@ -102,6 +76,7 @@ impl MethodBuilder {
     self
   }
 
+  /// Adds a series of custom properties to the generated `Method`.
   #[must_use]
   pub fn properties<K, V, I>(mut self, iter: I) -> Self
   where

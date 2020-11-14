@@ -11,7 +11,11 @@ extern crate std;
 #[macro_use]
 extern crate serde;
 
-pub extern crate url;
+// Re-export `did_url` for convenience.
+pub use did_url;
+
+// Re-export `url` for convenience.
+pub use url;
 
 mod document;
 mod error;

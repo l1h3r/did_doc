@@ -31,37 +31,37 @@ impl SignatureData {
 
   pub fn as_str(&self) -> &str {
     match self {
-      SignatureData::None => "",
-      SignatureData::Jws(inner) => &*inner,
-      SignatureData::Proof(inner) => &*inner,
-      SignatureData::Signature(inner) => &*inner,
+      Self::None => "",
+      Self::Jws(inner) => &*inner,
+      Self::Proof(inner) => &*inner,
+      Self::Signature(inner) => &*inner,
     }
   }
 
   pub fn try_jws(&self) -> Option<&str> {
     match self {
-      SignatureData::None => None,
-      SignatureData::Jws(inner) => Some(&*inner),
-      SignatureData::Proof(_) => None,
-      SignatureData::Signature(_) => None,
+      Self::None => None,
+      Self::Jws(inner) => Some(&*inner),
+      Self::Proof(_) => None,
+      Self::Signature(_) => None,
     }
   }
 
   pub fn try_proof(&self) -> Option<&str> {
     match self {
-      SignatureData::None => None,
-      SignatureData::Jws(_) => None,
-      SignatureData::Proof(inner) => Some(&*inner),
-      SignatureData::Signature(_) => None,
+      Self::None => None,
+      Self::Jws(_) => None,
+      Self::Proof(inner) => Some(&*inner),
+      Self::Signature(_) => None,
     }
   }
 
   pub fn try_signature(&self) -> Option<&str> {
     match self {
-      SignatureData::None => None,
-      SignatureData::Jws(_) => None,
-      SignatureData::Proof(_) => None,
-      SignatureData::Signature(inner) => Some(&*inner),
+      Self::None => None,
+      Self::Jws(_) => None,
+      Self::Proof(_) => None,
+      Self::Signature(inner) => Some(&*inner),
     }
   }
 }

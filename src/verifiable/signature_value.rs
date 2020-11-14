@@ -13,7 +13,7 @@ pub struct SignatureValue {
 }
 
 impl SignatureValue {
-  pub fn new() -> Self {
+  pub const fn new() -> Self {
     Self {
       data: SignatureData::None,
       hide: Cell::new(false),

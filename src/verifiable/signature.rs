@@ -28,7 +28,7 @@ impl Signature {
     &*self.type_
   }
 
-  pub fn data(&self) -> &SignatureValue {
+  pub const fn data(&self) -> &SignatureValue {
     &self.data
   }
 

@@ -51,6 +51,6 @@ impl<T> Deref for MethodWrap<'_, T> {
   type Target = Method<T>;
 
   fn deref(&self) -> &Self::Target {
-    &self.method
+    self.method
   }
 }

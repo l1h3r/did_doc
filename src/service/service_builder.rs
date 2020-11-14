@@ -2,26 +2,22 @@ use alloc::string::String;
 use did_url::DID;
 use url::Url;
 
-use crate::error::Error;
 use crate::error::Result;
 use crate::service::Service;
 use crate::utils::Object;
 use crate::utils::Value;
 
-const ERR_MI: &str = "Missing `id`";
-const ERR_MT: &str = "Missing `type`";
-const ERR_MS: &str = "Missing `service_endpoint`";
-
+/// A `ServiceBuilder` is used to generate a customized `Service`.
 #[derive(Clone, Debug, Default)]
 pub struct ServiceBuilder<T = Object> {
-  id: Option<DID>,
-  type_: Option<String>,
-  service_endpoint: Option<Url>,
-  properties: T,
+  pub(crate) id: Option<DID>,
+  pub(crate) type_: Option<String>,
+  pub(crate) service_endpoint: Option<Url>,
+  pub(crate) properties: T,
 }
 
 impl<T> ServiceBuilder<T> {
-  #[must_use]
+  /// Creates a new `ServiceBuilder`.
   pub fn new(properties: T) -> Self {
     Self {
       id: None,
@@ -31,51 +27,35 @@ impl<T> ServiceBuilder<T> {
     }
   }
 
+  /// Sets the `id` value of the generated `Service`.
   #[must_use]
   pub fn id(mut self, value: DID) -> Self {
     self.id = Some(value);
     self
   }
 
+  /// Sets the `type` value of the generated `Service`.
   #[must_use]
   pub fn type_(mut self, value: impl Into<String>) -> Self {
     self.type_ = Some(value.into());
     self
   }
 
+  /// Sets the `serviceEndpoint` value of the generated `Service`.
   #[must_use]
   pub fn service_endpoint(mut self, value: Url) -> Self {
     self.service_endpoint = Some(value);
     self
   }
 
-  #[must_use]
+  /// Returns a new `Service` based on the `ServiceBuilder` configuration.
   pub fn build(self) -> Result<Service<T>> {
-    let id: DID = self.id.ok_or(Error::InvalidBuilder {
-      name: "Service",
-      error: ERR_MI,
-    })?;
-
-    let type_: String = self.type_.ok_or(Error::InvalidBuilder {
-      name: "Service",
-      error: ERR_MT,
-    })?;
-
-    let service_endpoint: Url = self.service_endpoint.ok_or(Error::InvalidBuilder {
-      name: "Service",
-      error: ERR_MS,
-    })?;
-
-    Ok(Service {
-      id,
-      type_,
-      service_endpoint,
-      properties: self.properties,
-    })
+    Service::from_builder(self)
   }
 }
 
 impl ServiceBuilder {
+  /// Adds a new custom property to the generated `Service`.
   #[must_use]
   pub fn property<K, V>(mut self, key: K, value: V) -> Self
   where
@@ -86,6 +66,7 @@ impl ServiceBuilder {
     self
   }
 
+  /// Adds a series of custom properties to the generated `Service`.
   #[must_use]
   pub fn properties<K, V, I>(mut self, iter: I) -> Self
   where

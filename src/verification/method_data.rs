@@ -19,6 +19,14 @@ pub enum MethodData {
 }
 
 impl MethodData {
+  /// Returns a `Vec<u8>` containing the decoded bytes of the `MethodData`.
+  ///
+  /// This is generally a public key identified by a `MethodType` value.
+  ///
+  /// # Errors
+  ///
+  /// Decoding can fail if `MethodData` has invalid content or cannot be
+  /// represented as a vector of bytes.
   pub fn try_decode(&self) -> Result<Vec<u8>> {
     match self {
       Self::PublicKeyBase58(input) => decode_b58(input),
