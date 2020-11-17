@@ -68,6 +68,11 @@ impl<T> OrderedSet<T> {
     self.0
   }
 
+  #[inline]
+  pub fn clear(&mut self) {
+    self.0.clear();
+  }
+
   pub fn contains<U>(&self, item: &U) -> bool
   where
     T: AsRef<U>,

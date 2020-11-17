@@ -49,3 +49,9 @@ impl From<(usize, MethodScope)> for MethodQuery<'_> {
     Self::with_scope(other.0, other.1)
   }
 }
+
+impl<'a> From<(MethodIndex<'a>, MethodScope)> for MethodQuery<'a> {
+  fn from(other: (MethodIndex<'a>, MethodScope)) -> Self {
+    Self::with_scope(other.0, other.1)
+  }
+}
