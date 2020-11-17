@@ -9,13 +9,13 @@ use serde::Serialize;
 use crate::document::Document;
 use crate::error::Result;
 use crate::utils::Object;
+use crate::verifiable::DocumentReader;
+use crate::verifiable::DocumentWriter;
 use crate::verifiable::SetSignature;
 use crate::verifiable::Signature;
 use crate::verifiable::SignatureDocument;
 use crate::verifiable::SignatureOptions;
-use crate::verifiable::SignatureReader;
 use crate::verifiable::SignatureSuite;
-use crate::verifiable::SignatureWriter;
 use crate::verifiable::TrySignature;
 use crate::verifiable::VerifiableProperties;
 use crate::verification::MethodQuery;
@@ -88,9 +88,8 @@ impl<T, U, V> VerifiableDocument<T, U, V> {
     Q: Into<MethodQuery<'a>>,
   {
     let options: SignatureOptions = self.signature_options(query)?;
-    let mut target: SignatureWriter<D, T, U, V> = SignatureWriter::new(self, data);
 
-    SignatureDocument::sign_data(&mut target, suite, options, secret)?;
+    DocumentWriter::new(data, self).sign(suite, options, secret)?;
 
     Ok(())
   }
@@ -100,9 +99,7 @@ impl<T, U, V> VerifiableDocument<T, U, V> {
     D: Serialize + TrySignature,
     S: SignatureSuite,
   {
-    let target: SignatureReader<D, T, U, V> = SignatureReader::new(self, data);
-
-    SignatureDocument::verify_data(&target, suite)?;
+    DocumentReader::new(data, self).verify(suite)?;
 
     Ok(())
   }
@@ -116,10 +113,6 @@ impl<T, U, V> VerifiableDocument<T, U, V> {
       .try_resolve(query)
       .and_then(|method| method.try_into_fragment())
       .map(SignatureOptions::new)
-  }
-
-  pub(crate) fn _resolve(&self, method: &str) -> Option<Vec<u8>> {
-    self.document.resolve(method)?.key_data().try_decode().ok()
   }
 }
 
@@ -155,7 +148,7 @@ where
   V: Serialize,
 {
   fn resolve_method(&self, method: &str) -> Option<Vec<u8>> {
-    self._resolve(method)
+    self.resolve_bytes(method)
   }
 
   fn try_signature(&self) -> Option<&Signature> {

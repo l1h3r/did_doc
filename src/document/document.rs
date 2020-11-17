@@ -262,6 +262,20 @@ impl<T, U, V> Document<T, U, V> {
     self.resolve(query).ok_or_else(|| Error::message(ERR_VMNF))
   }
 
+  pub fn resolve_bytes<'a, Q>(&self, query: Q) -> Option<Vec<u8>>
+  where
+    Q: Into<MethodQuery<'a>>,
+  {
+    self.resolve(query)?.key_data().try_decode().ok()
+  }
+
+  pub fn try_resolve_bytes<'a, Q>(&self, query: Q) -> Result<Vec<u8>>
+  where
+    Q: Into<MethodQuery<'a>>,
+  {
+    self.try_resolve(query)?.key_data().try_decode()
+  }
+
   fn resolve_method<'a>(&self, query: MethodQuery<'a>) -> Option<MethodWrap<U>> {
     let iter = match query.scope {
       MethodScope::VerificationMethod => return self.resolve_verification_method(query),

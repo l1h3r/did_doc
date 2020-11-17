@@ -1,7 +1,9 @@
+use alloc::string::String;
 use core::fmt::Display;
 use core::fmt::Error as FmtError;
 use core::fmt::Formatter;
 use core::fmt::Result as FmtResult;
+use core::iter::once;
 use did_url::DID;
 use serde::Serialize;
 use serde_json::to_string;
@@ -18,6 +20,7 @@ const ERR_MI: &str = "Missing `id`";
 const ERR_MC: &str = "Missing `controller`";
 const ERR_MKT: &str = "Missing `key_type`";
 const ERR_MKD: &str = "Missing `key_data`";
+const ERR_VMMF: &str = "Verification Method Missing Fragment";
 
 /// A DID Document Verification Method
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -119,6 +122,14 @@ impl<T> Method<T> {
   /// Returns a mutable reference to the custom verification `Method` properties.
   pub fn properties_mut(&mut self) -> &mut T {
     &mut self.properties
+  }
+
+  pub fn try_into_fragment(&self) -> Result<String> {
+    self
+      .id
+      .fragment()
+      .ok_or_else(|| Error::message(ERR_VMMF))
+      .map(|fragment| once('#').chain(fragment.chars()).collect())
   }
 }
 

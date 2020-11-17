@@ -1,11 +1,15 @@
 use core::cmp::Ordering;
 use core::convert::AsMut;
 use core::convert::AsRef;
+use core::fmt::Debug;
+use core::fmt::Display;
+use core::fmt::Formatter;
+use core::fmt::Result;
 use core::ops::Deref;
 use core::ops::DerefMut;
 use did_url::DID;
 
-#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+#[derive(Clone, Copy, Deserialize, Serialize)]
 #[repr(transparent)]
 #[serde(transparent)]
 pub struct DIDKey<T>(T);
@@ -96,5 +100,23 @@ impl<T> From<T> for DIDKey<T> {
   #[inline]
   fn from(other: T) -> Self {
     Self(other)
+  }
+}
+
+impl<T> Debug for DIDKey<T>
+where
+  T: Debug,
+{
+  fn fmt(&self, f: &mut Formatter) -> Result {
+    Debug::fmt(&self.0, f)
+  }
+}
+
+impl<T> Display for DIDKey<T>
+where
+  T: Display,
+{
+  fn fmt(&self, f: &mut Formatter) -> Result {
+    Display::fmt(&self.0, f)
   }
 }
