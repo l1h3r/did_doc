@@ -68,8 +68,6 @@ impl<T, U, V> Document<T, U, V> {
       error: ERR_MI,
     })?;
 
-    // TODO: Validate key identifiers
-
     Ok(Self {
       id,
       controller: builder.controller,
@@ -317,5 +315,107 @@ where
     } else {
       f.write_str(&to_string(self).map_err(|_| FmtError)?)
     }
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use crate::Document;
+  use crate::DocumentBuilder;
+  use crate::Method;
+  use crate::MethodBuilder;
+  use crate::MethodData;
+  use crate::MethodScope;
+  use crate::MethodType;
+  use did_url::DID;
+
+  fn controller() -> DID {
+    "did:example:1234".parse().unwrap()
+  }
+
+  fn method(controller: &DID, fragment: &str) -> Method {
+    MethodBuilder::default()
+      .id(controller.join(fragment).unwrap())
+      .controller(controller.clone())
+      .key_type(MethodType::Ed25519VerificationKey2018)
+      .key_data(MethodData::new_b58(fragment.as_bytes()))
+      .build()
+      .unwrap()
+  }
+
+  fn document() -> Document {
+    let controller: DID = controller();
+
+    DocumentBuilder::default()
+      .id(controller.clone())
+      .verification_method(method(&controller, "#key-1"))
+      .verification_method(method(&controller, "#key-2"))
+      .verification_method(method(&controller, "#key-3"))
+      .authentication(method(&controller, "#auth-key"))
+      .authentication(controller.join("#key-3").unwrap())
+      .key_agreement(controller.join("#key-4").unwrap())
+      .build()
+      .unwrap()
+  }
+
+  #[test]
+  #[rustfmt::skip]
+  fn test_resolve_fragment_identifier() {
+    let document: Document = document();
+
+    // Resolve methods by fragment using the default scope (VerificationMethod)
+    assert_eq!(document.resolve("#key-1").unwrap().id(), "did:example:1234#key-1");
+    assert_eq!(document.resolve("#key-2").unwrap().id(), "did:example:1234#key-2");
+    assert_eq!(document.resolve("#key-3").unwrap().id(), "did:example:1234#key-3");
+
+    // Perfect fine to omit the octothorpe
+    assert_eq!(document.resolve("key-1").unwrap().id(), "did:example:1234#key-1");
+    assert_eq!(document.resolve("key-2").unwrap().id(), "did:example:1234#key-2");
+    assert_eq!(document.resolve("key-3").unwrap().id(), "did:example:1234#key-3");
+  }
+
+  #[test]
+  #[rustfmt::skip]
+  fn test_resolve_index_identifier() {
+    let document: Document = document();
+
+    // Resolve methods by index using the default scope once again
+    assert_eq!(document.resolve(0).unwrap().id(), "did:example:1234#key-1");
+    assert_eq!(document.resolve(2).unwrap().id(), "did:example:1234#key-3");
+  }
+
+  #[test]
+  #[rustfmt::skip]
+  fn test_resolve_explicit_scope() {
+    let document: Document = document();
+
+    // Resolve methods by fragment using explicit scopes
+    assert_eq!(document.resolve(("#key-1", MethodScope::KeyAgreement)), None);
+    assert_eq!(document.resolve(("#key-2", MethodScope::VerificationMethod)).unwrap().id(), "did:example:1234#key-2");
+  }
+
+  #[test]
+  #[rustfmt::skip]
+  fn test_resolve_reference_found() {
+    let document: Document = document();
+
+    // Resolving a method reference returns the method object
+    let resolved_ref = document.resolve(("#key-3", MethodScope::Authentication)).unwrap();
+    let resolved_obj = document.resolve(("#key-3", MethodScope::VerificationMethod)).unwrap();
+
+    assert_eq!(resolved_ref.index(), 2);
+    assert_eq!(resolved_ref.scope(), MethodScope::VerificationMethod);
+
+    // The resolved methods should be identical
+    assert_eq!(&*resolved_ref, &*resolved_obj);
+  }
+
+  #[test]
+  #[rustfmt::skip]
+  fn test_resolve_reference_missing() {
+    let document: Document = document();
+
+    // Resolving an existing reference to a missing method returns None
+    assert_eq!(document.resolve(("#key-4", MethodScope::KeyAgreement)), None);
   }
 }
