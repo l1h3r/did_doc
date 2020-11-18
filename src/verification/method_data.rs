@@ -19,6 +19,16 @@ pub enum MethodData {
 }
 
 impl MethodData {
+  /// Creates a new `MethodData` variant with base16-encoded content.
+  pub fn new_b16(data: impl AsRef<[u8]>) -> Self {
+    Self::PublicKeyHex(hex::encode(data.as_ref()))
+  }
+
+  /// Creates a new `MethodData` variant with base58-encoded content.
+  pub fn new_b58(data: impl AsRef<[u8]>) -> Self {
+    Self::PublicKeyBase58(bs58::encode(data.as_ref()).into_string())
+  }
+
   /// Returns a `Vec<u8>` containing the decoded bytes of the `MethodData`.
   ///
   /// This is generally a public key identified by a `MethodType` value.
