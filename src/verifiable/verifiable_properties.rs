@@ -8,6 +8,7 @@ use crate::verifiable::Signature;
 pub struct VerifiableProperties<T = Object> {
   #[serde(flatten)]
   pub(crate) properties: T,
+  // TODO: Support multiple signatures (?)
   #[serde(skip_serializing_if = "Option::is_none")]
   pub(crate) proof: Option<Signature>,
 }

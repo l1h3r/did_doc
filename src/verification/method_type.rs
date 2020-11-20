@@ -13,6 +13,16 @@ pub enum MethodType {
   Ed25519VerificationKey2018,
 }
 
+impl MethodType {
+  pub const fn as_str(self) -> &'static str {
+    match self {
+      Self::JcsEd25519Key2020 => "JcsEd25519Key2020",
+      Self::JwsVerificationKey2020 => "JwsVerificationKey2020",
+      Self::Ed25519VerificationKey2018 => "Ed25519VerificationKey2018",
+    }
+  }
+}
+
 impl FromStr for MethodType {
   type Err = Error;
 

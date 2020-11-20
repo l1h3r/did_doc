@@ -264,7 +264,7 @@ impl<T, U, V> Document<T, U, V> {
   where
     Q: Into<MethodQuery<'a>>,
   {
-    self.resolve(query)?.key_data().try_decode().ok()
+    self.try_resolve_bytes(query).ok()
   }
 
   pub fn try_resolve_bytes<'a, Q>(&self, query: Q) -> Result<Vec<u8>>
