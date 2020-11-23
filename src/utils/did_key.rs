@@ -1,3 +1,4 @@
+use alloc::borrow::Borrow;
 use core::cmp::Ordering;
 use core::convert::AsMut;
 use core::convert::AsRef;
@@ -5,6 +6,8 @@ use core::fmt::Debug;
 use core::fmt::Display;
 use core::fmt::Formatter;
 use core::fmt::Result;
+use core::hash::Hash;
+use core::hash::Hasher;
 use core::ops::Deref;
 use core::ops::DerefMut;
 use did_url::DID;
@@ -66,6 +69,18 @@ where
   }
 }
 
+impl<T> Hash for DIDKey<T>
+where
+  T: AsRef<DID>,
+{
+  fn hash<H>(&self, hasher: &mut H)
+  where
+    H: Hasher,
+  {
+    self.as_did().hash(hasher)
+  }
+}
+
 impl<T> Deref for DIDKey<T> {
   type Target = T;
 
@@ -93,6 +108,16 @@ impl<T> AsMut<T> for DIDKey<T> {
   #[inline]
   fn as_mut(&mut self) -> &mut T {
     &mut self.0
+  }
+}
+
+impl<T> Borrow<DID> for DIDKey<T>
+where
+  T: AsRef<DID>,
+{
+  #[inline]
+  fn borrow(&self) -> &DID {
+    self.as_did()
   }
 }
 
