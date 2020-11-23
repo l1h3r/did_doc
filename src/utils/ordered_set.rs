@@ -14,6 +14,7 @@ use crate::error::Result;
 
 const ERR_DUP: &str = "Duplicate Item in Ordered Set";
 
+/// An ordered set based on a `Vec<T>`.
 #[derive(Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Deserialize, Serialize)]
 #[repr(transparent)]
 #[serde(
@@ -23,56 +24,81 @@ const ERR_DUP: &str = "Duplicate Item in Ordered Set";
 pub struct OrderedSet<T>(Vec<T>);
 
 impl<T> OrderedSet<T> {
+  /// Creates a new `OrderedSet`.
   #[inline]
   pub const fn new() -> Self {
     Self(Vec::new())
   }
 
+  /// Creates a new `OrderedSet` with the specified capacity.
   #[inline]
   pub fn with_capacity(capacity: usize) -> Self {
     Self(Vec::with_capacity(capacity))
   }
 
+  /// Returns the number of elements in the `OrderedSet`.
   #[inline]
   pub fn len(&self) -> usize {
     self.0.len()
   }
 
+  /// Returns `true` if the `OrderedSet` contains no elements.
   #[inline]
   pub fn is_empty(&self) -> bool {
     self.0.is_empty()
   }
 
+  /// Returns an iterator over the slice of elements.
   #[inline]
   pub fn iter(&self) -> Iter<T> {
     self.0.iter()
   }
 
+  /// Returns the first element in the set, or `None` if the set is empty.
   #[inline]
   pub fn head(&self) -> Option<&T> {
     self.0.first()
   }
 
+  /// Returns a mutable referece to the first element in the set, or `None` if
+  /// the set is empty.
+  #[inline]
+  pub fn head_mut(&mut self) -> Option<&mut T> {
+    self.0.first_mut()
+  }
+
+  /// Returns the last element in the set, or `None` if the set is empty.
   #[inline]
   pub fn tail(&self) -> Option<&T> {
     self.0.last()
   }
 
+  /// Returns a mutable referece the last element in the set, or `None` if the
+  /// set is empty.
+  #[inline]
+  pub fn tail_mut(&mut self) -> Option<&mut T> {
+    self.0.last_mut()
+  }
+
+  /// Returns a slice containing all elements in the `OrderedSet`.
   #[inline]
   pub fn as_slice(&self) -> &[T] {
     &self.0
   }
 
+  /// Consumes the `OrderedSet` and returns the elements as a `Vec<T>`.
   #[inline]
   pub fn into_vec(self) -> Vec<T> {
     self.0
   }
 
+  /// Clears the `OrderedSet`, removing all values.
   #[inline]
   pub fn clear(&mut self) {
     self.0.clear();
   }
 
+  /// Returns `true` if the `OrderedSet` contains the given value.
   pub fn contains<U>(&self, item: &U) -> bool
   where
     T: AsRef<U>,
@@ -81,6 +107,8 @@ impl<T> OrderedSet<T> {
     self.0.iter().any(|other| other.as_ref() == item)
   }
 
+  /// Adds a new value to the end of the `OrderedSet`; returns `true` if the
+  /// value was successfully added.
   pub fn append(&mut self, item: T) -> bool
   where
     T: PartialEq,
@@ -93,6 +121,8 @@ impl<T> OrderedSet<T> {
     }
   }
 
+  /// Adds a new value to the start of the `OrderedSet`; returns `true` if the
+  /// value was successfully added.
   pub fn prepend(&mut self, item: T) -> bool
   where
     T: PartialEq,
@@ -105,6 +135,8 @@ impl<T> OrderedSet<T> {
     }
   }
 
+  /// Replaces a `current` value with the given `update` value; returns `true`
+  /// if the value was successfully replaced.
   #[inline]
   pub fn replace<U>(&mut self, current: &U, update: T) -> bool
   where
@@ -116,6 +148,8 @@ impl<T> OrderedSet<T> {
     })
   }
 
+  /// Updates an existing value in the `OrderedSet`; returns `true` if the value
+  /// was successfully updated.
   #[inline]
   pub fn update(&mut self, update: T) -> bool
   where

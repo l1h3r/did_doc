@@ -4,6 +4,7 @@ use crate::error::Error;
 
 const ERR_UMS: &str = "Unknown Method Scope";
 
+/// Verification method group used to refine the scope of a method query.
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum MethodScope {
   VerificationMethod,

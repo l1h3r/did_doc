@@ -9,6 +9,7 @@ const ERR_IKD: &str = "Invalid Key Data";
 const ERR_IB16: &str = "Invalid Base16 Key Data";
 const ERR_IB58: &str = "Invalid Base58 Key Data";
 
+/// Supported verification method data formats.
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[non_exhaustive]

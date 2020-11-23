@@ -5,6 +5,7 @@ use crate::error::Result;
 
 const ERR_UMT: &str = "Unknown Method Type";
 
+/// Supported verification method types.
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Deserialize, Serialize)]
 #[non_exhaustive]
 pub enum MethodType {

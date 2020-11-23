@@ -12,22 +12,29 @@ use core::ops::Deref;
 use core::ops::DerefMut;
 use did_url::DID;
 
+/// A helper struct for comparing types only by `DID`.
+///
+/// Types are expected to implement `AsRef<DID>` which allows access to traits
+/// for ordering and comparison.
 #[derive(Clone, Copy, Deserialize, Serialize)]
 #[repr(transparent)]
 #[serde(transparent)]
 pub struct DIDKey<T>(T);
 
 impl<T> DIDKey<T> {
+  /// Create a new `DIDKey`.
   #[inline]
   pub const fn new(inner: T) -> Self {
     Self(inner)
   }
 
+  /// Consumes the `DIDKey` and returns the inner `T`.
   #[inline]
   pub fn into_inner(self) -> T {
     self.0
   }
 
+  /// Returns a reference to the `DID`.
   #[inline]
   pub fn as_did(&self) -> &DID
   where

@@ -1,6 +1,9 @@
 use crate::verification::MethodIndex;
 use crate::verification::MethodScope;
 
+/// Specifies the  conditions of a DID document method resolution query.
+///
+/// See `Document::resolve`.
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MethodQuery<'a> {
   pub(crate) ident: MethodIndex<'a>,
@@ -8,6 +11,7 @@ pub struct MethodQuery<'a> {
 }
 
 impl<'a> MethodQuery<'a> {
+  /// Creates a new `MethodQuery`.
   pub fn new<T>(ident: T) -> Self
   where
     T: Into<MethodIndex<'a>>,
@@ -15,6 +19,7 @@ impl<'a> MethodQuery<'a> {
     Self::with_scope(ident, MethodScope::default())
   }
 
+  /// Creates a new `MethodQuery` with the given `MethodScope`.
   pub fn with_scope<T>(ident: T, scope: MethodScope) -> Self
   where
     T: Into<MethodIndex<'a>>,

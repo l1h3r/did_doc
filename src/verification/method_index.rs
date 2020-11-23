@@ -1,5 +1,7 @@
 use did_url::DID;
 
+/// Index or identifier used to identify the target verification method of a
+/// `MethodQuery`.
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum MethodIndex<'a> {
   Index(usize),
@@ -7,6 +9,7 @@ pub enum MethodIndex<'a> {
 }
 
 impl<'a> MethodIndex<'a> {
+  /// Returns a `bool` indicating if the given `DID` matches the identifier.
   pub fn matches(&self, did: &DID) -> bool {
     match self {
       Self::Index(_) => false,

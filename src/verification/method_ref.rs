@@ -3,6 +3,7 @@ use did_url::DID;
 use crate::utils::Object;
 use crate::verification::Method;
 
+/// A reference to a verification method, either a `DID` or embedded `Method`.
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum MethodRef<T = Object> {
