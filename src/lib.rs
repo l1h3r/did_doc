@@ -58,6 +58,7 @@ pub use self::verification::Method;
 pub use self::verification::MethodBuilder;
 pub use self::verification::MethodData;
 pub use self::verification::MethodIndex;
+pub use self::verification::MethodQuery;
 pub use self::verification::MethodRef;
 pub use self::verification::MethodScope;
 pub use self::verification::MethodType;

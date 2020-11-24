@@ -1,4 +1,9 @@
 use alloc::string::String;
+use alloc::string::ToString as _;
+use core::convert::TryFrom;
+
+use crate::error::Error;
+use crate::verification::MethodWrap;
 
 #[derive(Clone, Debug, Default, Hash, PartialEq, Eq, PartialOrd, Ord, Deserialize, Serialize)]
 pub struct SignatureOptions {
@@ -23,5 +28,26 @@ impl SignatureOptions {
       nonce: None,
       domain: None,
     }
+  }
+
+  pub const fn with_purpose(verification_method: String, proof_purpose: String) -> Self {
+    Self {
+      verification_method,
+      proof_purpose: Some(proof_purpose),
+      created: None,
+      nonce: None,
+      domain: None,
+    }
+  }
+}
+
+impl<T> TryFrom<MethodWrap<'_, T>> for SignatureOptions {
+  type Error = Error;
+
+  fn try_from(other: MethodWrap<'_, T>) -> Result<Self, Self::Error> {
+    Ok(Self::with_purpose(
+      other.id().to_string(),
+      other.scope().as_str().to_string(),
+    ))
   }
 }

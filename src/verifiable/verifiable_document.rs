@@ -9,16 +9,11 @@ use serde::Serialize;
 use crate::document::Document;
 use crate::error::Result;
 use crate::utils::Object;
-use crate::verifiable::DocumentReader;
-use crate::verifiable::DocumentWriter;
-use crate::verifiable::SetSignature;
 use crate::verifiable::Signature;
 use crate::verifiable::SignatureDocument;
 use crate::verifiable::SignatureOptions;
 use crate::verifiable::SignatureSuite;
-use crate::verifiable::TrySignature;
 use crate::verifiable::VerifiableProperties;
-use crate::verification::MethodQuery;
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[repr(transparent)]
@@ -47,72 +42,26 @@ impl<T, U, V> VerifiableDocument<T, U, V> {
   pub fn proof_mut(&mut self) -> Option<&mut Signature> {
     self.properties_mut().proof_mut()
   }
+}
 
-  pub fn sign<'a, Q, S>(&mut self, suite: S, query: Q, secret: &[u8]) -> Result<()>
+impl<T, U, V> VerifiableDocument<T, U, V>
+where
+  T: Serialize,
+  U: Serialize,
+  V: Serialize,
+{
+  pub fn sign<S>(&mut self, suite: S, options: SignatureOptions, secret: &[u8]) -> Result<()>
   where
-    T: Serialize,
-    U: Serialize,
-    V: Serialize,
     S: SignatureSuite,
-    Q: Into<MethodQuery<'a>>,
   {
-    let options: SignatureOptions = self.signature_options(query)?;
-
-    SignatureDocument::sign_data(self, suite, options, secret)?;
-
-    Ok(())
+    SignatureDocument::sign_data(self, suite, options, secret)
   }
 
   pub fn verify<S>(&self, suite: S) -> Result<()>
   where
-    T: Serialize,
-    U: Serialize,
-    V: Serialize,
     S: SignatureSuite,
   {
-    SignatureDocument::verify_data(self, suite)?;
-
-    Ok(())
-  }
-
-  pub fn sign_data<'a, D, Q, S>(
-    &self,
-    data: &mut D,
-    suite: S,
-    query: Q,
-    secret: &[u8],
-  ) -> Result<()>
-  where
-    D: Serialize + SetSignature,
-    S: SignatureSuite,
-    Q: Into<MethodQuery<'a>>,
-  {
-    let options: SignatureOptions = self.signature_options(query)?;
-
-    DocumentWriter::new(data, self).sign(suite, options, secret)?;
-
-    Ok(())
-  }
-
-  pub fn verify_data<D, S>(&self, data: &D, suite: S) -> Result<()>
-  where
-    D: Serialize + TrySignature,
-    S: SignatureSuite,
-  {
-    DocumentReader::new(data, self).verify(suite)?;
-
-    Ok(())
-  }
-
-  pub(crate) fn signature_options<'a, Q>(&self, query: Q) -> Result<SignatureOptions>
-  where
-    Q: Into<MethodQuery<'a>>,
-  {
-    self
-      .document
-      .try_resolve(query)
-      .and_then(|method| method.try_into_fragment())
-      .map(SignatureOptions::new)
+    SignatureDocument::verify_data(self, suite)
   }
 }
 

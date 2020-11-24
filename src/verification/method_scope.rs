@@ -15,6 +15,19 @@ pub enum MethodScope {
   CapabilityInvocation,
 }
 
+impl MethodScope {
+  pub const fn as_str(&self) -> &'static str {
+    match self {
+      Self::VerificationMethod => "VerificationMethod",
+      Self::Authentication => "Authentication",
+      Self::AssertionMethod => "AssertionMethod",
+      Self::KeyAgreement => "KeyAgreement",
+      Self::CapabilityDelegation => "CapabilityDelegation",
+      Self::CapabilityInvocation => "CapabilityInvocation",
+    }
+  }
+}
+
 impl Default for MethodScope {
   fn default() -> Self {
     Self::VerificationMethod

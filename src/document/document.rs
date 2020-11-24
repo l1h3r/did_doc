@@ -1,4 +1,5 @@
 use alloc::vec::Vec;
+use core::convert::TryFrom as _;
 use core::convert::TryInto as _;
 use core::fmt::Display;
 use core::fmt::Error as FmtError;
@@ -17,6 +18,12 @@ use crate::service::Service;
 use crate::utils::DIDKey;
 use crate::utils::Object;
 use crate::utils::OrderedSet;
+use crate::verifiable::DocumentReader;
+use crate::verifiable::DocumentWriter;
+use crate::verifiable::SetSignature;
+use crate::verifiable::SignatureOptions;
+use crate::verifiable::SignatureSuite;
+use crate::verifiable::TrySignature;
 use crate::verification::Method;
 use crate::verification::MethodQuery;
 use crate::verification::MethodRef;
@@ -272,6 +279,35 @@ impl<T, U, V> Document<T, U, V> {
     Q: Into<MethodQuery<'a>>,
   {
     self.try_resolve(query)?.key_data().try_decode()
+  }
+
+  pub fn sign_data<D, S>(
+    &self,
+    data: &mut D,
+    suite: S,
+    options: SignatureOptions,
+    secret: &[u8],
+  ) -> Result<()>
+  where
+    D: Serialize + SetSignature,
+    S: SignatureSuite,
+  {
+    DocumentWriter::new(data, self).sign(suite, options, secret)
+  }
+
+  pub fn verify_data<D, S>(&self, data: &D, suite: S) -> Result<()>
+  where
+    D: Serialize + TrySignature,
+    S: SignatureSuite,
+  {
+    DocumentReader::new(data, self).verify(suite)
+  }
+
+  pub fn resolve_options<'a, Q>(&self, query: Q) -> Result<SignatureOptions>
+  where
+    Q: Into<MethodQuery<'a>>,
+  {
+    self.try_resolve(query).and_then(SignatureOptions::try_from)
   }
 
   fn resolve_method<'a>(&self, query: MethodQuery<'a>) -> Option<MethodWrap<U>> {
