@@ -27,7 +27,7 @@ impl<'a, 'b, T, U> MethodReader<'a, 'b, T, U> {
     T: Serialize + TrySignature,
     S: SignatureSuite,
   {
-    self.verify_data(suite)
+    self.verify_doc(suite)
   }
 }
 

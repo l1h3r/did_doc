@@ -28,7 +28,7 @@ impl<'a, 'b, T, U> MethodWriter<'a, 'b, T, U> {
     T: Serialize + SetSignature,
     S: SignatureSuite,
   {
-    self.sign_data(suite, options, secret)
+    self.sign_doc(suite, options, secret)
   }
 }
 

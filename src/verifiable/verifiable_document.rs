@@ -54,14 +54,14 @@ where
   where
     S: SignatureSuite,
   {
-    SignatureDocument::sign_data(self, suite, options, secret)
+    self.sign_doc(suite, options, secret)
   }
 
   pub fn verify<S>(&self, suite: S) -> Result<()>
   where
     S: SignatureSuite,
   {
-    SignatureDocument::verify_data(self, suite)
+    self.verify_doc(suite)
   }
 }
 

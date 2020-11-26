@@ -28,7 +28,7 @@ impl<'a, 'b, D, T, U, V> DocumentWriter<'a, 'b, D, T, U, V> {
     D: Serialize + SetSignature,
     S: SignatureSuite,
   {
-    self.sign_data(suite, options, secret)
+    self.sign_doc(suite, options, secret)
   }
 }
 

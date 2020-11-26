@@ -20,7 +20,7 @@ pub trait SignatureDocument: Serialize + Sized {
 
   fn set_signature(&mut self, signature: Signature);
 
-  fn sign_data<T>(&mut self, suite: T, options: SignatureOptions, secret: &[u8]) -> Result<()>
+  fn sign_doc<T>(&mut self, suite: T, options: SignatureOptions, secret: &[u8]) -> Result<()>
   where
     T: SignatureSuite,
   {
@@ -33,7 +33,7 @@ pub trait SignatureDocument: Serialize + Sized {
     Ok(())
   }
 
-  fn verify_data<T>(&self, suite: T) -> Result<()>
+  fn verify_doc<T>(&self, suite: T) -> Result<()>
   where
     T: SignatureSuite,
   {

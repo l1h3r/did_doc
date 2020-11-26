@@ -27,7 +27,7 @@ impl<'a, 'b, D, T, U, V> DocumentReader<'a, 'b, D, T, U, V> {
     D: Serialize + TrySignature,
     S: SignatureSuite,
   {
-    self.verify_data(suite)
+    self.verify_doc(suite)
   }
 }
 
