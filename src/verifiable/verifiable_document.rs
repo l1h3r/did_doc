@@ -1,6 +1,6 @@
 use alloc::vec::Vec;
-use core::fmt::Display;
 use core::fmt::Debug;
+use core::fmt::Display;
 use core::fmt::Formatter;
 use core::fmt::Result as FmtResult;
 use core::ops::Deref;
