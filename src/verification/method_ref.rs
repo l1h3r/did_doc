@@ -1,10 +1,13 @@
+use core::fmt::Debug;
+use core::fmt::Formatter;
+use core::fmt::Result as FmtResult;
 use did_url::DID;
 
 use crate::utils::Object;
 use crate::verification::Method;
 
 /// A reference to a verification method, either a `DID` or embedded `Method`.
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, PartialEq, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum MethodRef<T = Object> {
   Embed(Method<T>),
@@ -65,6 +68,15 @@ impl<T> MethodRef<T> {
     match self {
       Self::Embed(_) => Err(self),
       Self::Refer(inner) => Ok(inner),
+    }
+  }
+}
+
+impl<T> Debug for MethodRef<T> where T: Debug {
+  fn fmt(&self, f: &mut Formatter) -> FmtResult {
+    match self {
+      Self::Embed(inner) => Debug::fmt(inner, f),
+      Self::Refer(inner) => Debug::fmt(inner, f),
     }
   }
 }

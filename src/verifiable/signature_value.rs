@@ -1,10 +1,13 @@
 use core::cell::Cell;
+use core::fmt::Debug;
+use core::fmt::Formatter;
+use core::fmt::Result;
 use core::ops::Deref;
 use core::ops::DerefMut;
 
 use crate::verifiable::SignatureData;
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Deserialize, Serialize)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Deserialize, Serialize)]
 #[serde(transparent)]
 pub struct SignatureValue {
   data: SignatureData,
@@ -38,6 +41,12 @@ impl SignatureValue {
 
   pub(crate) fn show(&self) {
     self.hide.set(false);
+  }
+}
+
+impl Debug for SignatureValue {
+  fn fmt(&self, f: &mut Formatter) -> Result {
+    Debug::fmt(&self.data, f)
   }
 }
 

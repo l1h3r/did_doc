@@ -1,11 +1,14 @@
 use alloc::string::String;
+use core::fmt::Debug;
+use core::fmt::Formatter;
+use core::fmt::Result;
 use core::ops::Deref;
 use core::ops::DerefMut;
 
 use crate::verifiable::SignatureOptions;
 use crate::verifiable::SignatureValue;
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Deserialize, Serialize)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Deserialize, Serialize)]
 pub struct Signature {
   #[serde(rename = "type")]
   type_: String,
@@ -42,6 +45,20 @@ impl Signature {
 
   pub(crate) fn show_value(&self) {
     self.data.show();
+  }
+}
+
+impl Debug for Signature {
+  fn fmt(&self, f: &mut Formatter) -> Result {
+    f.debug_struct("Signature")
+      .field("type_", &self.type_)
+      .field("data", &self.data)
+      .field("verification_method", &self.options.verification_method)
+      .field("proof_purpose", &self.options.proof_purpose)
+      .field("created", &self.options.created)
+      .field("nonce", &self.options.nonce)
+      .field("domain", &self.options.domain)
+      .finish()
   }
 }
 
