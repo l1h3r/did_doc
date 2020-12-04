@@ -1,5 +1,5 @@
+use alloc::string::ToString;
 use alloc::vec::Vec;
-use core::convert::TryFrom as _;
 use core::convert::TryInto as _;
 use core::fmt::Display;
 use core::fmt::Error as FmtError;
@@ -307,7 +307,13 @@ impl<T, U, V> Document<T, U, V> {
   where
     Q: Into<MethodQuery<'a>>,
   {
-    self.try_resolve(query).and_then(SignatureOptions::try_from)
+    let query: MethodQuery = query.into();
+    let method: MethodWrap<U> = self.try_resolve(query)?;
+
+    Ok(SignatureOptions::with_purpose(
+      method.id.to_string(),
+      query.scope.as_str().to_string(),
+    ))
   }
 
   fn resolve_method<'a>(&self, query: MethodQuery<'a>) -> Option<MethodWrap<U>> {
