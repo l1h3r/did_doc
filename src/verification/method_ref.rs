@@ -72,7 +72,10 @@ impl<T> MethodRef<T> {
   }
 }
 
-impl<T> Debug for MethodRef<T> where T: Debug {
+impl<T> Debug for MethodRef<T>
+where
+  T: Debug,
+{
   fn fmt(&self, f: &mut Formatter) -> FmtResult {
     match self {
       Self::Embed(inner) => Debug::fmt(inner, f),
