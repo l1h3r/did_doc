@@ -14,6 +14,7 @@ use crate::verifiable::SignatureDocument;
 use crate::verifiable::SignatureOptions;
 use crate::verifiable::SignatureSuite;
 use crate::verifiable::VerifiableProperties;
+use crate::verification::MethodQuery;
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[repr(transparent)]
@@ -96,8 +97,8 @@ where
   U: Serialize,
   V: Serialize,
 {
-  fn resolve_method(&self, method: &str) -> Option<Vec<u8>> {
-    self.resolve_bytes(method)
+  fn resolve_method(&self, query: MethodQuery) -> Option<Vec<u8>> {
+    self.resolve_bytes(query)
   }
 
   fn try_signature(&self) -> Option<&Signature> {

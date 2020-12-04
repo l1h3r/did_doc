@@ -9,6 +9,7 @@ use crate::verifiable::Signature;
 use crate::verifiable::SignatureDocument;
 use crate::verifiable::SignatureOptions;
 use crate::verifiable::SignatureSuite;
+use crate::verification::MethodQuery;
 
 #[derive(Debug, Serialize)]
 pub struct DocumentWriter<'a, 'b, D, T = Object, U = Object, V = Object> {
@@ -36,8 +37,8 @@ impl<D, T, U, V> SignatureDocument for DocumentWriter<'_, '_, D, T, U, V>
 where
   D: Serialize + SetSignature,
 {
-  fn resolve_method(&self, method: &str) -> Option<Vec<u8>> {
-    self.root.resolve_bytes(method)
+  fn resolve_method(&self, query: MethodQuery) -> Option<Vec<u8>> {
+    self.root.resolve_bytes(query)
   }
 
   fn try_signature(&self) -> Option<&Signature> {

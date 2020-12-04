@@ -7,12 +7,14 @@ use crate::verifiable::Signature;
 use crate::verifiable::SignatureData;
 use crate::verifiable::SignatureOptions;
 use crate::verifiable::SignatureSuite;
+use crate::verification::MethodIndex;
+use crate::verification::MethodQuery;
 
 const ERR_VMNF: &str = "Verification Method Not Found";
 const ERR_SNF: &str = "Signature Not Found";
 
 pub trait SignatureDocument: Serialize + Sized {
-  fn resolve_method(&self, method: &str) -> Option<Vec<u8>>;
+  fn resolve_method(&self, query: MethodQuery) -> Option<Vec<u8>>;
 
   fn try_signature(&self) -> Option<&Signature>;
 
@@ -38,9 +40,16 @@ pub trait SignatureDocument: Serialize + Sized {
     T: SignatureSuite,
   {
     let signature: &Signature = self.signature()?;
+    let identifier: MethodIndex = MethodIndex::Ident(&signature.verification_method);
+
+    let query: MethodQuery = if let Some(purpose) = signature.proof_purpose.as_deref() {
+      MethodQuery::with_scope(identifier, purpose.parse()?)
+    } else {
+      MethodQuery::new(identifier)
+    };
 
     let method: Vec<u8> = self
-      .resolve_method(&signature.verification_method)
+      .resolve_method(query)
       .ok_or_else(|| Error::message(ERR_VMNF))?;
 
     signature.hide_value();
