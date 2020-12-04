@@ -1,5 +1,6 @@
 use alloc::vec::Vec;
 use core::fmt::Display;
+use core::fmt::Debug;
 use core::fmt::Formatter;
 use core::fmt::Result as FmtResult;
 use core::ops::Deref;
@@ -16,7 +17,7 @@ use crate::verifiable::SignatureSuite;
 use crate::verifiable::VerifiableProperties;
 use crate::verification::MethodQuery;
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, PartialEq, Deserialize, Serialize)]
 #[repr(transparent)]
 #[serde(transparent)]
 pub struct VerifiableDocument<T = Object, U = Object, V = Object> {
@@ -77,6 +78,17 @@ impl<T, U, V> Deref for VerifiableDocument<T, U, V> {
 impl<T, U, V> DerefMut for VerifiableDocument<T, U, V> {
   fn deref_mut(&mut self) -> &mut Self::Target {
     &mut self.document
+  }
+}
+
+impl<T, U, V> Debug for VerifiableDocument<T, U, V>
+where
+  T: Debug,
+  U: Debug,
+  V: Debug,
+{
+  fn fmt(&self, f: &mut Formatter) -> FmtResult {
+    Debug::fmt(&self.document, f)
   }
 }
 
