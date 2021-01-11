@@ -1,4 +1,3 @@
-use alloc::string::String;
 use did_url::DID;
 use url::Url;
 
@@ -6,6 +5,7 @@ use crate::error::Result;
 use crate::service::Service;
 use crate::utils::Object;
 use crate::utils::Value;
+use crate::lib::*;
 
 /// A `ServiceBuilder` is used to generate a customized `Service`.
 #[derive(Clone, Debug, Default)]

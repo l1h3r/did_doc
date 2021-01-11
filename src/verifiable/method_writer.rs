@@ -1,6 +1,6 @@
-use alloc::vec::Vec;
 use serde::Serialize;
 
+use crate::lib::*;
 use crate::error::Result;
 use crate::utils::Object;
 use crate::verifiable::SetSignature;

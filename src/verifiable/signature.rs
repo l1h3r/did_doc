@@ -1,10 +1,10 @@
-use alloc::string::String;
 use core::fmt::Debug;
 use core::fmt::Formatter;
 use core::fmt::Result;
 use core::ops::Deref;
 use core::ops::DerefMut;
 
+use crate::lib::*;
 use crate::verifiable::SignatureOptions;
 use crate::verifiable::SignatureValue;
 

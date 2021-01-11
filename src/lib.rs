@@ -63,3 +63,26 @@ pub use self::verification::MethodRef;
 pub use self::verification::MethodScope;
 pub use self::verification::MethodType;
 pub use self::verification::MethodWrap;
+
+mod lib {
+  #[cfg(all(feature = "alloc", not(feature = "std")))]
+  pub use alloc::borrow::Borrow;
+  #[cfg(feature = "std")]
+  pub use std::borrow::Borrow;
+
+  #[cfg(all(feature = "alloc", not(feature = "std")))]
+  pub use alloc::string::{String, ToString};
+  #[cfg(feature = "std")]
+  pub use std::string::{String, ToString};
+
+  #[cfg(all(feature = "alloc", not(feature = "std")))]
+  pub use alloc::vec::Vec;
+  #[cfg(feature = "std")]
+  pub use std::vec::Vec;
+
+  #[cfg(all(feature = "alloc", not(feature = "std")))]
+  pub use alloc::collections::BTreeMap;
+  #[cfg(feature = "std")]
+  pub use std::collections::BTreeMap;
+
+}

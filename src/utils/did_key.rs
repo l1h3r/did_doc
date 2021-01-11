@@ -1,4 +1,3 @@
-use alloc::borrow::Borrow;
 use core::cmp::Ordering;
 use core::convert::AsMut;
 use core::convert::AsRef;
@@ -11,6 +10,8 @@ use core::hash::Hasher;
 use core::ops::Deref;
 use core::ops::DerefMut;
 use did_url::DID;
+
+use crate::lib::*;
 
 /// A helper struct for comparing types only by `DID`.
 ///

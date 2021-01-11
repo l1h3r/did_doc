@@ -1,5 +1,3 @@
-use alloc::string::ToString;
-use alloc::vec::Vec;
 use core::convert::TryInto as _;
 use core::fmt::Display;
 use core::fmt::Error as FmtError;
@@ -11,6 +9,7 @@ use serde_json::to_string;
 use serde_json::to_string_pretty;
 use url::Url;
 
+use crate::lib::*;
 use crate::document::DocumentBuilder;
 use crate::error::Error;
 use crate::error::Result;

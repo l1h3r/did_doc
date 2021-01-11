@@ -1,4 +1,3 @@
-use alloc::vec::Vec;
 use core::borrow::Borrow;
 use core::convert::TryFrom;
 use core::fmt::Debug;
@@ -11,6 +10,7 @@ use serde::Deserialize;
 
 use crate::error::Error;
 use crate::error::Result;
+use crate::lib::*;
 
 const ERR_DUP: &str = "Duplicate Item in Ordered Set";
 

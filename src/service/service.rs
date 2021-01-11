@@ -1,4 +1,3 @@
-use alloc::string::String;
 use core::fmt::Display;
 use core::fmt::Error as FmtError;
 use core::fmt::Formatter;
@@ -13,6 +12,7 @@ use crate::error::Error;
 use crate::error::Result;
 use crate::service::ServiceBuilder;
 use crate::utils::Object;
+use crate::lib::*;
 
 const ERR_MI: &str = "Missing `id`";
 const ERR_MT: &str = "Missing `type`";

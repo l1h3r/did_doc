@@ -1,4 +1,3 @@
-use alloc::vec::Vec;
 use core::fmt::Debug;
 use core::fmt::Display;
 use core::fmt::Formatter;
@@ -7,6 +6,7 @@ use core::ops::Deref;
 use core::ops::DerefMut;
 use serde::Serialize;
 
+use crate::lib::*;
 use crate::document::Document;
 use crate::error::Result;
 use crate::utils::Object;

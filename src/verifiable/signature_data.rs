@@ -1,4 +1,4 @@
-use alloc::string::String;
+use crate::lib::*;
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Deserialize, Serialize)]
 pub enum SignatureData {

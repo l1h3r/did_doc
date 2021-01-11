@@ -1,8 +1,7 @@
-use alloc::string::String;
-use alloc::vec::Vec;
 use did_url::DID;
 use url::Url;
 
+use crate::lib::*;
 use crate::document::Document;
 use crate::error::Result;
 use crate::service::Service;
