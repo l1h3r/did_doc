@@ -54,8 +54,8 @@ pub struct Document<T = Object, U = Object, V = Object> {
   pub(crate) capability_delegation: OrderedSet<DIDKey<MethodRef<U>>>,
   #[serde(default = "Default::default", rename = "capabilityInvocation", skip_serializing_if = "OrderedSet::is_empty")]
   pub(crate) capability_invocation: OrderedSet<DIDKey<MethodRef<U>>>,
-  #[serde(default = "Default::default", skip_serializing_if = "Vec::is_empty")]
-  pub(crate) service: Vec<Service<V>>,
+  #[serde(default = "Default::default", skip_serializing_if = "OrderedSet::is_empty")]
+  pub(crate) service: OrderedSet<DIDKey<Service<V>>>,
   #[serde(flatten)]
   pub(crate) properties: T,
 }
@@ -85,7 +85,7 @@ impl<T, U, V> Document<T, U, V> {
       key_agreement: builder.key_agreement.try_into()?,
       capability_delegation: builder.capability_delegation.try_into()?,
       capability_invocation: builder.capability_invocation.try_into()?,
-      service: builder.service, // TODO: UnorderedSet
+      service: builder.service.try_into()?,
       properties: builder.properties,
     })
   }
@@ -181,12 +181,12 @@ impl<T, U, V> Document<T, U, V> {
   }
 
   /// Returns a reference to the `Document` service set.
-  pub fn service(&self) -> &[Service<V>] {
+  pub fn service(&self) -> &OrderedSet<DIDKey<Service<V>>> {
     &self.service
   }
 
   /// Returns a mutable reference to the `Document` service set.
-  pub fn service_mut(&mut self) -> &mut Vec<Service<V>> {
+  pub fn service_mut(&mut self) -> &mut OrderedSet<DIDKey<Service<V>>> {
     &mut self.service
   }
 

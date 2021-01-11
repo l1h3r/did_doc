@@ -24,7 +24,7 @@ pub struct DocumentBuilder<T = Object, U = Object, V = Object> {
   pub(crate) key_agreement: Vec<DIDKey<MethodRef<U>>>,
   pub(crate) capability_delegation: Vec<DIDKey<MethodRef<U>>>,
   pub(crate) capability_invocation: Vec<DIDKey<MethodRef<U>>>,
-  pub(crate) service: Vec<Service<V>>,
+  pub(crate) service: Vec<DIDKey<Service<V>>>,
   pub(crate) properties: T,
 }
 
@@ -112,7 +112,7 @@ impl<T, U, V> DocumentBuilder<T, U, V> {
   /// Adds a value to the `service` set of the generated `Document`.
   #[must_use]
   pub fn service(mut self, value: Service<V>) -> Self {
-    self.service.push(value);
+    self.service.push(DIDKey::new(value));
     self
   }
 
