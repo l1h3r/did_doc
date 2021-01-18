@@ -12,7 +12,7 @@ use crate::verification::Method;
 use crate::verification::MethodRef;
 
 /// A `DocumentBuilder` is used to generate a customized `Document`.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct DocumentBuilder<T = Object, U = Object, V = Object> {
   pub(crate) id: Option<DID>,
   pub(crate) controller: Option<DID>,
@@ -145,6 +145,15 @@ impl DocumentBuilder {
       .properties
       .extend(iter.into_iter().map(|(k, v)| (k.into(), v.into())));
     self
+  }
+}
+
+impl<T, U, V> Default for DocumentBuilder<T, U, V>
+where
+  T: Default,
+{
+  fn default() -> Self {
+    Self::new(T::default())
   }
 }
 
