@@ -7,15 +7,15 @@ use core::ops::DerefMut;
 use serde::Serialize;
 
 use crate::document::Document;
-use crate::error::Result;
-use crate::lib::*;
+use crate::signature::Signature;
 use crate::utils::Object;
-use crate::verifiable::Signature;
-use crate::verifiable::SignatureDocument;
-use crate::verifiable::SignatureOptions;
-use crate::verifiable::SignatureSuite;
+use crate::verifiable::ResolveMethod;
+use crate::verifiable::SetSignature;
+use crate::verifiable::TrySignature;
+use crate::verifiable::TrySignatureMut;
 use crate::verifiable::VerifiableProperties;
 use crate::verification::MethodQuery;
+use crate::verification::MethodWrap;
 
 #[derive(Clone, PartialEq, Deserialize, Serialize)]
 #[repr(transparent)]
@@ -44,26 +44,9 @@ impl<T, U, V> VerifiableDocument<T, U, V> {
   pub fn proof_mut(&mut self) -> Option<&mut Signature> {
     self.properties_mut().proof_mut()
   }
-}
 
-impl<T, U, V> VerifiableDocument<T, U, V>
-where
-  T: Serialize,
-  U: Serialize,
-  V: Serialize,
-{
-  pub fn sign<S>(&mut self, suite: S, options: SignatureOptions, secret: &[u8]) -> Result<()>
-  where
-    S: SignatureSuite,
-  {
-    self.sign_doc(suite, options, secret)
-  }
-
-  pub fn verify<S>(&self, suite: S) -> Result<()>
-  where
-    S: SignatureSuite,
-  {
-    self.verify_doc(suite)
+  pub fn set_proof(&mut self, signature: Signature) {
+    self.properties_mut().proof = Some(signature);
   }
 }
 
@@ -103,25 +86,26 @@ where
   }
 }
 
-impl<T, U, V> SignatureDocument for VerifiableDocument<T, U, V>
-where
-  T: Serialize,
-  U: Serialize,
-  V: Serialize,
-{
-  fn resolve_method(&self, query: MethodQuery) -> Option<Vec<u8>> {
-    self.resolve_bytes(query)
+impl<T, U, V> TrySignature for VerifiableDocument<T, U, V> {
+  fn signature(&self) -> Option<&Signature> {
+    self.proof()
   }
+}
 
-  fn try_signature(&self) -> Option<&Signature> {
-    self.document.properties().proof()
+impl<T, U, V> TrySignatureMut for VerifiableDocument<T, U, V> {
+  fn signature_mut(&mut self) -> Option<&mut Signature> {
+    self.proof_mut()
   }
+}
 
-  fn try_signature_mut(&mut self) -> Option<&mut Signature> {
-    self.document.properties_mut().proof_mut()
-  }
-
+impl<T, U, V> SetSignature for VerifiableDocument<T, U, V> {
   fn set_signature(&mut self, signature: Signature) {
-    self.document.properties_mut().proof = Some(signature);
+    self.set_proof(signature)
+  }
+}
+
+impl<T, U, V> ResolveMethod<U> for VerifiableDocument<T, U, V> {
+  fn resolve_method(&self, query: MethodQuery<'_>) -> Option<MethodWrap<'_, U>> {
+    self.document.resolve(query)
   }
 }

@@ -1,12 +1,16 @@
 use core::fmt::Debug;
 use core::fmt::Formatter;
-use core::fmt::Result;
+use core::fmt::Result as FmtResult;
 use core::ops::Deref;
 use core::ops::DerefMut;
 
+use crate::error::Result;
 use crate::lib::*;
-use crate::verifiable::SignatureOptions;
-use crate::verifiable::SignatureValue;
+use crate::signature::SignatureData;
+use crate::signature::SignatureOptions;
+use crate::signature::SignatureValue;
+use crate::verification::MethodIndex;
+use crate::verification::MethodQuery;
 
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Deserialize, Serialize)]
 pub struct Signature {
@@ -39,17 +43,35 @@ impl Signature {
     &mut self.data
   }
 
-  pub(crate) fn hide_value(&self) {
+  pub fn set_data(&mut self, value: SignatureData) {
+    self.data.set(value);
+  }
+
+  pub fn clear_data(&mut self) {
+    self.data.clear();
+  }
+
+  pub fn hide_value(&self) {
     self.data.hide();
   }
 
-  pub(crate) fn show_value(&self) {
+  pub fn show_value(&self) {
     self.data.show();
+  }
+
+  pub fn to_query(&self) -> Result<MethodQuery<'_>> {
+    let ident: MethodIndex<'_> = (&*self.verification_method).into();
+
+    if let Some(scope) = self.proof_purpose.as_deref() {
+      Ok(MethodQuery::with_scope(ident, scope.parse()?))
+    } else {
+      Ok(MethodQuery::new(ident))
+    }
   }
 }
 
 impl Debug for Signature {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+  fn fmt(&self, f: &mut Formatter) -> FmtResult {
     f.debug_struct("Signature")
       .field("type_", &self.type_)
       .field("data", &self.data)

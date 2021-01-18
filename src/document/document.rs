@@ -14,15 +14,11 @@ use crate::error::Error;
 use crate::error::Result;
 use crate::lib::*;
 use crate::service::Service;
+use crate::signature::SignatureOptions;
 use crate::utils::DIDKey;
 use crate::utils::Object;
 use crate::utils::OrderedSet;
-use crate::verifiable::DocumentReader;
-use crate::verifiable::DocumentWriter;
-use crate::verifiable::SetSignature;
-use crate::verifiable::SignatureOptions;
-use crate::verifiable::SignatureSuite;
-use crate::verifiable::TrySignature;
+use crate::verifiable::ResolveMethod;
 use crate::verification::Method;
 use crate::verification::MethodQuery;
 use crate::verification::MethodRef;
@@ -280,28 +276,6 @@ impl<T, U, V> Document<T, U, V> {
     self.try_resolve(query)?.key_data().try_decode()
   }
 
-  pub fn sign_data<D, S>(
-    &self,
-    data: &mut D,
-    suite: S,
-    options: SignatureOptions,
-    secret: &[u8],
-  ) -> Result<()>
-  where
-    D: Serialize + SetSignature,
-    S: SignatureSuite,
-  {
-    DocumentWriter::new(data, self).sign(suite, options, secret)
-  }
-
-  pub fn verify_data<D, S>(&self, data: &D, suite: S) -> Result<()>
-  where
-    D: Serialize + TrySignature,
-    S: SignatureSuite,
-  {
-    DocumentReader::new(data, self).verify(suite)
-  }
-
   pub fn resolve_options<'a, Q>(&self, query: Q) -> Result<SignatureOptions>
   where
     Q: Into<MethodQuery<'a>>,
@@ -356,6 +330,12 @@ where
     } else {
       f.write_str(&to_string(self).map_err(|_| FmtError)?)
     }
+  }
+}
+
+impl<T, U, V> ResolveMethod<U> for Document<T, U, V> {
+  fn resolve_method(&self, query: MethodQuery<'_>) -> Option<MethodWrap<'_, U>> {
+    Document::resolve_method(self, query)
   }
 }
 

@@ -5,7 +5,7 @@ use core::fmt::Result;
 use core::ops::Deref;
 use core::ops::DerefMut;
 
-use crate::verifiable::SignatureData;
+use crate::signature::SignatureData;
 
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Deserialize, Serialize)]
 #[serde(transparent)]
@@ -35,11 +35,11 @@ impl SignatureValue {
     self.set(SignatureData::None);
   }
 
-  pub(crate) fn hide(&self) {
+  pub fn hide(&self) {
     self.hide.set(true);
   }
 
-  pub(crate) fn show(&self) {
+  pub fn show(&self) {
     self.hide.set(false);
   }
 }

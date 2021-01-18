@@ -1,8 +1,8 @@
 use core::ops::Deref;
 use core::ops::DerefMut;
 
+use crate::signature::Signature;
 use crate::utils::Object;
-use crate::verifiable::Signature;
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Deserialize, Serialize)]
 pub struct VerifiableProperties<T = Object> {
