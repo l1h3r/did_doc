@@ -1,7 +1,7 @@
 use serde::Serialize;
 
-use crate::lib::*;
 use crate::error::Result;
+use crate::lib::*;
 use crate::utils::Object;
 use crate::verifiable::SetSignature;
 use crate::verifiable::Signature;

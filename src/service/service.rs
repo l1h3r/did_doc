@@ -10,9 +10,9 @@ use url::Url;
 
 use crate::error::Error;
 use crate::error::Result;
+use crate::lib::*;
 use crate::service::ServiceBuilder;
 use crate::utils::Object;
-use crate::lib::*;
 
 const ERR_MI: &str = "Missing `id`";
 const ERR_MT: &str = "Missing `type`";

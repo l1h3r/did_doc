@@ -9,10 +9,10 @@ use serde_json::to_string;
 use serde_json::to_string_pretty;
 use url::Url;
 
-use crate::lib::*;
 use crate::document::DocumentBuilder;
 use crate::error::Error;
 use crate::error::Result;
+use crate::lib::*;
 use crate::service::Service;
 use crate::utils::DIDKey;
 use crate::utils::Object;

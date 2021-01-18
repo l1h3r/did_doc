@@ -6,9 +6,9 @@ use core::ops::Deref;
 use core::ops::DerefMut;
 use serde::Serialize;
 
-use crate::lib::*;
 use crate::document::Document;
 use crate::error::Result;
+use crate::lib::*;
 use crate::utils::Object;
 use crate::verifiable::Signature;
 use crate::verifiable::SignatureDocument;

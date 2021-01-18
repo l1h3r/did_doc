@@ -1,7 +1,7 @@
 use core::convert::TryFrom;
 
-use crate::lib::*;
 use crate::error::Error;
+use crate::lib::*;
 use crate::verification::MethodWrap;
 
 #[derive(Clone, Debug, Default, Hash, PartialEq, Eq, PartialOrd, Ord, Deserialize, Serialize)]

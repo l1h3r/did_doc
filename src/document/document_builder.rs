@@ -1,9 +1,9 @@
 use did_url::DID;
 use url::Url;
 
-use crate::lib::*;
 use crate::document::Document;
 use crate::error::Result;
+use crate::lib::*;
 use crate::service::Service;
 use crate::utils::DIDKey;
 use crate::utils::Object;

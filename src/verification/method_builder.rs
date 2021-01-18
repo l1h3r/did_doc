@@ -1,7 +1,7 @@
 use did_url::DID;
 
-use crate::lib::*;
 use crate::error::Result;
+use crate::lib::*;
 use crate::utils::Object;
 use crate::utils::Value;
 use crate::verification::Method;
