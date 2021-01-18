@@ -1,6 +1,3 @@
-use core::convert::TryFrom;
-
-use crate::error::Error;
 use crate::lib::*;
 use crate::verification::MethodWrap;
 
@@ -40,13 +37,11 @@ impl SignatureOptions {
   }
 }
 
-impl<T> TryFrom<MethodWrap<'_, T>> for SignatureOptions {
-  type Error = Error;
-
-  fn try_from(other: MethodWrap<'_, T>) -> Result<Self, Self::Error> {
-    Ok(Self::with_purpose(
+impl<T> From<MethodWrap<'_, T>> for SignatureOptions {
+  fn from(other: MethodWrap<'_, T>) -> Self {
+    Self::with_purpose(
       other.id().to_string(),
       other.scope().as_str().to_string(),
-    ))
+    )
   }
 }
