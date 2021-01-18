@@ -39,9 +39,6 @@ impl SignatureOptions {
 
 impl<T> From<MethodWrap<'_, T>> for SignatureOptions {
   fn from(other: MethodWrap<'_, T>) -> Self {
-    Self::with_purpose(
-      other.id().to_string(),
-      other.scope().as_str().to_string(),
-    )
+    Self::with_purpose(other.id().to_string(), other.scope().as_str().to_string())
   }
 }
