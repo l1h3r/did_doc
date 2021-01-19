@@ -1,5 +1,6 @@
 use serde::Serialize;
 
+use crate::error::Error;
 use crate::error::Result;
 use crate::signature::Sign;
 use crate::signature::Signature;
@@ -31,7 +32,7 @@ where
   pub fn sign<T, K>(&self, message: &mut T, options: SignatureOptions, secret: &K) -> Result<()>
   where
     T: Serialize + SetSignature,
-    K: AsRef<[u8]>,
+    K: AsRef<[u8]> + ?Sized,
   {
     message.set_signature(Signature::new(self.suite.name(), options));
 
@@ -62,14 +63,19 @@ where
     M: Serialize,
   {
     let signature: &Signature = message.try_signature()?;
+
+    if signature.type_() != self.suite.name() {
+      return Err(Error::message("Invalid Signature Type"));
+    }
+
     let query: MethodQuery<'_> = signature.to_query()?;
     let method: MethodWrap<'_, M> = resolver.try_resolve_method(query)?;
 
-    signature.hide_value();
+    if !S::METHODS.contains(&method.key_type()) {
+      return Err(Error::message("Invalid Method Type"));
+    }
 
-    self.suite.verify(message, signature.data(), &method)?;
-
-    signature.show_value();
+    signature.verify(&self.suite, message, &method.key_data().try_decode()?)?;
 
     Ok(())
   }

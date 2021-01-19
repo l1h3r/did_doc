@@ -3,7 +3,7 @@ use serde::Serialize;
 use crate::error::Result;
 use crate::lib::*;
 use crate::signature::SignatureData;
-use crate::verification::Method;
+use crate::verification::MethodType;
 
 pub trait SuiteName {
   fn name(&self) -> String;
@@ -43,21 +43,23 @@ where
 // =============================================================================
 
 pub trait Verify {
-  fn verify<T, U>(&self, data: &T, signature: &SignatureData, method: &Method<U>) -> Result<()>
+  const METHODS: &'static [MethodType];
+
+  fn verify<T>(&self, data: &T, signature: &SignatureData, public: &[u8]) -> Result<()>
   where
-    T: Serialize,
-    U: Serialize;
+    T: Serialize;
 }
 
 impl<'a, T> Verify for &'a T
 where
   T: Verify,
 {
-  fn verify<U, V>(&self, data: &U, signature: &SignatureData, method: &Method<V>) -> Result<()>
+  const METHODS: &'static [MethodType] = T::METHODS;
+
+  fn verify<U>(&self, data: &U, signature: &SignatureData, public: &[u8]) -> Result<()>
   where
     U: Serialize,
-    V: Serialize,
   {
-    (**self).verify(data, signature, method)
+    (**self).verify(data, signature, public)
   }
 }
