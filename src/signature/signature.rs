@@ -3,12 +3,14 @@ use core::fmt::Formatter;
 use core::fmt::Result as FmtResult;
 use core::ops::Deref;
 use core::ops::DerefMut;
+use serde::Serialize;
 
 use crate::error::Result;
 use crate::lib::*;
 use crate::signature::SignatureData;
 use crate::signature::SignatureOptions;
 use crate::signature::SignatureValue;
+use crate::signature::Verify;
 use crate::verification::MethodIndex;
 use crate::verification::MethodQuery;
 
@@ -67,6 +69,20 @@ impl Signature {
     } else {
       Ok(MethodQuery::new(ident))
     }
+  }
+
+  pub fn verify<S, M>(&self, suite: &S, message: &M, public: &[u8]) -> Result<()>
+  where
+    S: Verify,
+    M: Serialize,
+  {
+    self.data.hide();
+
+    suite.verify(message, self.data(), public)?;
+
+    self.data.show();
+
+    Ok(())
   }
 }
 
