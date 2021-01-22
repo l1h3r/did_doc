@@ -12,7 +12,7 @@ pub enum MethodType {
   JcsEd25519Key2020,
   JwsVerificationKey2020,
   Ed25519VerificationKey2018,
-  Ed25519MerkleVerificationKey2021,
+  MerkleKeyCollection2021,
 }
 
 impl MethodType {
@@ -21,7 +21,7 @@ impl MethodType {
       Self::JcsEd25519Key2020 => "JcsEd25519Key2020",
       Self::JwsVerificationKey2020 => "JwsVerificationKey2020",
       Self::Ed25519VerificationKey2018 => "Ed25519VerificationKey2018",
-      Self::Ed25519MerkleVerificationKey2021 => "Ed25519MerkleVerificationKey2021",
+      Self::MerkleKeyCollection2021 => "MerkleKeyCollection2021",
     }
   }
 }
@@ -34,7 +34,7 @@ impl FromStr for MethodType {
       "JcsEd25519Key2020" => Ok(Self::JcsEd25519Key2020),
       "JwsVerificationKey2020" => Ok(Self::JwsVerificationKey2020),
       "Ed25519VerificationKey2018" => Ok(Self::Ed25519VerificationKey2018),
-      "Ed25519MerkleVerificationKey2021" => Ok(Self::Ed25519MerkleVerificationKey2021),
+      "MerkleKeyCollection2021" => Ok(Self::MerkleKeyCollection2021),
       _ => Err(Error::message(ERR_UMT)),
     }
   }
