@@ -76,13 +76,20 @@ impl Signature {
     S: Verify,
     M: Serialize,
   {
+    self.verifiable(|data| suite.verify(message, data, public))
+  }
+
+  pub fn verifiable<T, F>(&self, f: F) -> T
+  where
+    F: FnOnce(&SignatureValue) -> T,
+  {
     self.data.hide();
 
-    suite.verify(message, self.data(), public)?;
+    let output: T = f(self.data());
 
     self.data.show();
 
-    Ok(())
+    output
   }
 }
 
